@@ -71,10 +71,58 @@ app.put('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
     } catch (error) {
         return res.status(404).json({error: "Prestador não encontrada"})
     }
-   
-    // catch (e) {
-    //     return res.status(404).json({error: "Prestador não encontrada"}) 
-    // }
+})
+
+
+// Listando todos os prestadores de serviço
+app.get('/prestador', async (req, res) => {
+    try {
+        const todosPrestadores = await prismaClient.prestadorServico.findMany();
+
+        return res.status(200).json(todosPrestadores);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Erro ao obter prestadores de serviço" });
+    }
+});
+
+
+// Listando os prestadores por tipo de serviço
+app.get('/prestadorservico', async (req, res) => {
+    const servico= String(req.body)
+    try {
+        const prestadores = await prismaClient.prestadorServico.findMany({
+            where: {
+              anuncios: {
+                some: {
+                  servico: servico.toLowerCase()
+                }
+              }
+            }
+          }); 
+        res.json({ prestadores });
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
+      }
+});
+
+
+
+//Deletando um prestador de serviço
+app.delete('/prestador/:id', retornaPrestadorExistente, async (req,res) => {
+    const { id } = req.params;     
+    try {
+        const prestadorEncontrado = await prismaClient.prestadorServico.delete({
+            where: {
+                id:id
+            },
+        })
+
+        return res.status(201).json({message: 'Prestador deletado com sucesso!'})
+
+    } catch (e) {
+        return res.status(404).json({error: "Prestador não encontrado"}) 
+    }    
 })
 
 app.listen(3005, () => {
