@@ -30,8 +30,8 @@ model Anuncio {
   longitude    String
   criadoEm     DateTime         @default(now())
   atualizadoEm DateTime         @updatedAt
-  prestadorId  String
   prestador      PrestadorServico @relation(fields: [prestadorId], references: [id])
+  prestadorId  String
 }
 
 model Usuario {

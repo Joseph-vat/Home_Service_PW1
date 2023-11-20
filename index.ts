@@ -89,23 +89,29 @@ app.get('/prestador', async (req, res) => {
 
 // Listando os prestadores por tipo de serviço
 app.get('/prestadorservico', async (req, res) => {
-    const servico= String(req.body)
+    const servico = String(req.body.servico).toLowerCase();
     try {
         const prestadores = await prismaClient.prestadorServico.findMany({
             where: {
-              anuncios: {
-                some: {
-                  servico: servico.toLowerCase()
+                anuncios: {
+                    some: {
+                        servico: {
+                            equals: servico
+                        }
+                    }
                 }
-              }
             }
-          }); 
-        res.json({ prestadores });
-      } catch (error) {
-        res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
-      }
-});
+        });
 
+        if (prestadores.length === 0) {
+            return res.status(404).json({ error: 'Nenhum prestador encontrado para esse serviço' });
+        }
+
+        res.json({ prestadores });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
+    }
+});
 
 
 //Deletando um prestador de serviço
