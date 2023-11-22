@@ -3,26 +3,12 @@ import { prismaClient } from "./prismaClient";
 import express, { Request, Response, NextFunction } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
-
+import { retornaPrestadorExistente } from "./middlewares";
 
 const app = express();
 app.use(express.json())
 
-//Funcão Middleware que checara se existe o prestador requerido no banco de dados
-async function retornaPrestadorExistente(req: Request, res: Response, next: NextFunction) {
-    const email = String(req.headers.email);
-    const prestadorEncontrado = await prismaClient.prestadorServico.findUnique({
-        where: {
-            email: email
-        }
-    })
-    if (prestadorEncontrado !== null) {
-        req.userExpr = prestadorEncontrado
-        next();
-    } else {
-        res.status(500).json({ error: "Prestador não existe." });
-    }
-}
+
 
 
 //criando prestador de serviço e criptografando a senha
@@ -82,8 +68,6 @@ app.post('/criarToken', retornaPrestadorExistente, async (req, res) => {
     }
 
 })
-
-
 
 
 // Atualizando prestador
