@@ -1,6 +1,8 @@
 import { log } from "console";
 import { prismaClient } from "./prismaClient";
-import express,{Request, Response, NextFunction} from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import { compare, hash } from 'bcrypt';
+import { sign } from "crypto";
 
 
 const app = express();
@@ -14,54 +16,87 @@ async function retornaPrestadorExistente(req: Request, res: Response, next: Next
             email: email
         }
     })
-    if (prestadorEncontrado !== null){
-        req.userExpr= prestadorEncontrado
+    if (prestadorEncontrado !== null) {
+        req.userExpr = prestadorEncontrado
         next();
-    }else{
-        res.status(500).json({ error: "Usuário não existe." });
-    } 
+    } else {
+        res.status(500).json({ error: "Prestador não existe." });
+    }
 }
 
-//criando prestador de serviço
+
+//criando prestador de serviço e criptografando a senha
 app.post('/prestador', async (req, res) => {
-    const {nome, email, telefone, endereco, foto} = req.body
+    const { nome, email, senha, telefone, endereco, foto } = req.body
     const comparaUser = await prismaClient.prestadorServico.findUnique({
         where: {
-            email: email,
-          },
+            email: email
+        },
     })
-    if(comparaUser !== null){
-        return res.status(400).json({error: "Prestador já existe na base de dados. Cadastre um novo prestador!"})
-     }
+    if (comparaUser !== null) {
+        return res.status(400).json({ error: "Prestador já existe na base de dados. Cadastre um novo prestador!" })
+    }
 
-     const novoPrestador = await prismaClient.prestadorServico.create({
-        data:{
+    const senhaCriptografada = await hash(senha, 5)
+    const novoPrestador = await prismaClient.prestadorServico.create({
+        data: {
             nome,
             email,
+            senha: senhaCriptografada,
+            telefone,
             endereco,
             foto,
-            telefone,
             anuncios: {
                 create: []
             },
         }
-     })
-     return res.status(201).json(novoPrestador)
+    })
+    return res.status(201).json(novoPrestador)
 })
+
+
+//Cria token para determinado usuario
+app.post('/criarToken', retornaPrestadorExistente, async (req, res) => {
+    const { email, senha } = req.body
+    const retornaPrestador = await prismaClient.prestadorServico.findUnique({
+        where: {
+            email: email
+        },
+    })
+    try {
+        if (retornaPrestador !== null) {
+            const compararSenhas = await compare(senha, retornaPrestador.senha)
+            if (!compararSenhas) {
+                return { message: "senha invalida!" }
+            }
+            const id = retornaPrestador.id as String
+            const token = sign(
+                {id},
+                process.env.CHAVE_SECRETA as string,
+                { expiresIn: '1d', subject: retornaPrestador.id});
+    
+            return res.status(201).json(token)
+        } 
+    } catch (error) {
+        
+    }
+
+})
+
+
 
 
 // Atualizando prestador
 app.put('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
-    const {nome, email, telefone, endereco, foto} = req.body
+    const { nome, email, telefone, endereco, foto } = req.body
     const id = String(req.params.id)
     try {
         const comparaUser = await prismaClient.prestadorServico.update({
             where: {
-                id:id
+                id: id
             },
             data: {
                 nome,
-                email,
                 telefone,
                 endereco,
                 foto
@@ -69,7 +104,7 @@ app.put('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
         })
         return res.status(201).json("Prestador atualizado com sucesso ")
     } catch (error) {
-        return res.status(404).json({error: "Prestador não encontrada"})
+        return res.status(404).json({ error: "Prestador não encontrada" })
     }
 })
 
@@ -115,20 +150,20 @@ app.get('/prestadorservico', async (req, res) => {
 
 
 //Deletando um prestador de serviço
-app.delete('/prestador/:id', retornaPrestadorExistente, async (req,res) => {
-    const { id } = req.params;     
+app.delete('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
+    const { id } = req.params;
     try {
         const prestadorEncontrado = await prismaClient.prestadorServico.delete({
             where: {
-                id:id
+                id: id
             },
         })
 
-        return res.status(201).json({message: 'Prestador deletado com sucesso!'})
+        return res.status(201).json({ message: 'Prestador deletado com sucesso!' })
 
     } catch (e) {
-        return res.status(404).json({error: "Prestador não encontrado"}) 
-    }    
+        return res.status(404).json({ error: "Prestador não encontrado" })
+    }
 })
 
 app.listen(3005, () => {

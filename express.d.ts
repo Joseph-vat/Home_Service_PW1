@@ -1,10 +1,11 @@
 type PrestadorServico = {
-    id: Int;
-    nome: String;
-    email: String;
-    telefone: String;
-    endereco: String;
-    foto: String;
+  id: String;
+  nome: String;
+  email: String;
+  senha: String;
+  telefone: String;
+  endereco: String;
+  foto: String;
 }
 
 type PrestadorServico = {

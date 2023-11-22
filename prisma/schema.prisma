@@ -11,17 +11,18 @@ datasource db {
 }
 
 model PrestadorServico {
-  id          String       @id @default(uuid())
+  id       String    @id @default(uuid())
   nome     String
   email    String    @unique
-  telefone String?
+  senha    String
+  telefone String
   endereco String
   foto     String //saber depois como usar e qual o tipo será
   anuncios Anuncio[]
 }
 
 model Anuncio {
-  id          String       @id @default(uuid())
+  id           String           @id @default(uuid())
   titulo       String
   descricao    String
   preco        String
@@ -30,14 +31,15 @@ model Anuncio {
   longitude    String
   criadoEm     DateTime         @default(now())
   atualizadoEm DateTime         @updatedAt
-  prestador      PrestadorServico @relation(fields: [prestadorId], references: [id])
+  prestador    PrestadorServico @relation(fields: [prestadorId], references: [id])
   prestadorId  String
 }
 
 model Usuario {
-  id          String       @id @default(uuid())
+  id       String @id @default(uuid())
   nome     String
   foto     String //saber depois como usar e qual o tipo será
-  email    String  @unique
-  telefone String?
+  email    String @unique
+  senha    String
+  telefone String
 }
