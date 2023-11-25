@@ -4,6 +4,9 @@ import express, { Request, Response, NextFunction } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import { retornaPrestadorExistente } from "./middlewares";
+import jwt from 'jsonwebtoken';
+import { autenticaToken } from "./middlewares";
+
 
 const app = express();
 app.use(express.json())
@@ -13,7 +16,7 @@ app.use(express.json())
 
 //criando prestador de serviço e criptografando a senha
 app.post('/prestador', async (req, res) => {
-    const { nome, email, senha, telefone, endereco, foto } = req.body
+    const { nome, email, senha, telefone, endereco, foto } = req.body 
     const comparaUser = await prismaClient.prestadorServico.findUnique({
         where: {
             email: email
@@ -41,9 +44,9 @@ app.post('/prestador', async (req, res) => {
 })
 
 
-//Cria token para determinado usuario
-app.post('/criarToken', retornaPrestadorExistente, async (req, res) => {
-    const { email, senha } = req.body
+//Cria token para determinado usuario (Fazer login)
+app.post('/login', retornaPrestadorExistente, async (req, res) => {
+    const {email, senha } = req.body 
     const retornaPrestador = await prismaClient.prestadorServico.findUnique({
         where: {
             email: email
@@ -55,25 +58,28 @@ app.post('/criarToken', retornaPrestadorExistente, async (req, res) => {
             if (!compararSenhas) {
                 return { message: "senha invalida!" }
             }
-            const id = retornaPrestador.id as String
-            const token = sign(
-                {id},
+            const prestadorId = retornaPrestador.id
+
+            const token = jwt.sign(
+                { id: prestadorId },
                 process.env.CHAVE_SECRETA as string,
-                { expiresIn: '1d', subject: retornaPrestador.id});
-    
+                { expiresIn: '1d',subject:prestadorId }
+            );
+
             return res.status(201).json(token)
-        } 
+        }
     } catch (error) {
-        
+
     }
 
 })
 
 
 // Atualizando prestador
-app.put('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
-    const { nome, email, telefone, endereco, foto } = req.body
-    const id = String(req.params.id)
+app.put('/prestador', retornaPrestadorExistente, autenticaToken, async (req, res) => {
+    const { nome, telefone, endereco, foto } = req.body
+    const id = req.autenticado
+    
     try {
         const comparaUser = await prismaClient.prestadorServico.update({
             where: {
@@ -108,7 +114,7 @@ app.get('/prestador', async (req, res) => {
 
 // Listando os prestadores por tipo de serviço
 app.get('/prestadorservico', async (req, res) => {
-    const servico = String(req.body.servico).toLowerCase();
+    const servico = <string>req.body.servico.toLowerCase();
     try {
         const prestadores = await prismaClient.prestadorServico.findMany({
             where: {
@@ -134,8 +140,8 @@ app.get('/prestadorservico', async (req, res) => {
 
 
 //Deletando um prestador de serviço
-app.delete('/prestador/:id', retornaPrestadorExistente, async (req, res) => {
-    const { id } = req.params;
+app.delete('/prestador', retornaPrestadorExistente, autenticaToken,  async (req, res) => {
+    const id = req.autenticado
     try {
         const prestadorEncontrado = await prismaClient.prestadorServico.delete({
             where: {
