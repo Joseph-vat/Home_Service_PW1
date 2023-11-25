@@ -1,6 +1,5 @@
-import { log } from "console";
 import { prismaClient } from "./prismaClient";
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import { retornaPrestadorExistente } from "./middlewares";
 
 
@@ -36,4 +35,39 @@ app.post('/anuncio', retornaPrestadorExistente, async (req, res) => {
         res.status(400).json({ Error: "Não foi possível salvar anúncio!" })
     }
 
+});
+
+
+// lista os anuncios associados a um prestador
+app.get('/anunciosPrestador', retornaPrestadorExistente, async (req, res) => {
+    const prestadorId = req.userExpr.id
+    try {
+        const anuncios = await prismaClient.anuncio.findMany({
+            where: {
+                prestadorId
+            }
+        });
+        return res.status(200).json(anuncios)
+    }
+    catch (Error) {
+        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
+    }
+});
+
+
+
+// lista todos os anuncios cadastrados
+app.get('/anuncios', async (req, res) => {
+    try {
+        const todosAnuncios = await prismaClient.anuncio.findMany();
+        return res.status(200).json(todosAnuncios)
+    }
+    catch (Error) {
+        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
+    }
+});
+
+
+app.listen(3005, () => {
+    console.log("conectado");
 });
