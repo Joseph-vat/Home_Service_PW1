@@ -37,7 +37,6 @@ app.post('/anuncio', retornaPrestadorExistente, async (req, res) => {
 
 });
 
-
 // lista os anuncios associados a um prestador
 app.get('/anunciosPrestador', retornaPrestadorExistente, async (req, res) => {
     const prestadorId = req.userExpr.id
@@ -54,8 +53,6 @@ app.get('/anunciosPrestador', retornaPrestadorExistente, async (req, res) => {
     }
 });
 
-
-
 // lista todos os anuncios cadastrados
 app.get('/anuncios', async (req, res) => {
     try {
@@ -67,6 +64,47 @@ app.get('/anuncios', async (req, res) => {
     }
 });
 
+// edita um anuncio 
+app.put('/anuncios/:id', async (req, res) => {
+    try {
+        const { titulo, descricao, preco, servico, latitude, longitude } = req.body
+        const { id } = req.params;
+        const anuncioEditado = await prismaClient.anuncio.update({
+            where: {
+                id: id
+            },
+            data: {
+                titulo,
+                descricao,
+                latitude,
+                longitude,
+                preco,
+                servico
+            }
+        });
+        res.status(200).json(anuncioEditado);
+    }
+    catch (Error) {
+        res.status(400).json({ Error: "Não foi possível encontrar anúncio!" })
+    }
+});
+
+// deleta um anuncio
+app.delete('/anuncio/:id', async (req, res) => {
+    const { id } = req.params // id do anuncio que desejo deletar
+
+    try {
+        const anuncioDeletado = await prismaClient.anuncio.delete({
+            where: {
+                id
+            }
+        });
+        res.status(200).json(anuncioDeletado);
+    }
+    catch (Error) {
+        res.status(400).json({ Error: "Não foi possível deletar anúncio!" })
+    }
+});
 
 app.listen(3005, () => {
     console.log("conectado");
