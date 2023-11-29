@@ -6,7 +6,7 @@ import { payload } from "./interfaces";
 //Funcão Middleware que checara se existe o prestador requerido no banco de dados
 export async function retornaPrestadorExistente(req: Request, res: Response, next: NextFunction) {
     const email = String(req.headers.email);
-    const prestadorEncontrado = await prismaClient.prestadorServico.findUnique({
+    const prestadorEncontrado = await prismaClient.usuario.findUnique({
         where: {
             email: email
         }

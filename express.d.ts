@@ -4,7 +4,6 @@ type PrestadorServico = {
   email: string;
   senha: string;
   telefone: string;
-  endereco: string;
   foto: string;
 }
 

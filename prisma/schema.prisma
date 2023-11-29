@@ -10,36 +10,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Usuario {
+  id        String            @id @default(uuid())
+  nome      String
+  email     String            @unique
+  senha     String
+  telefone  String
+  foto      String //saber depois como usar e qual o tipo será
+  prestador PrestadorServico?
+  cliente   Cliente?
+}
+
 model PrestadorServico {
-  id       String    @id @default(uuid())
-  nome     String
-  email    String    @unique
-  senha    String
-  telefone String
-  endereco String
-  foto     String //saber depois como usar e qual o tipo será
-  anuncios Anuncio[]
+  cnpj                   String    @unique
+  horarioDisponibilidade String
+  usuarioIdPrestador     String    @unique
+  usuario                Usuario   @relation(fields: [usuarioIdPrestador], references: [id])
+  anuncios               Anuncio[]
+}
+
+model Cliente {
+  cpf              String  @unique
+  endereco         String
+  usuarioIdCliente String  @unique
+  usuario          Usuario @relation(fields: [usuarioIdCliente], references: [id])
 }
 
 model Anuncio {
-  id           String           @id @default(uuid())
-  titulo       String
-  descricao    String
-  preco        String
-  servico      String
-  latitude     String
-  longitude    String
-  criadoEm     DateTime         @default(now())
-  atualizadoEm DateTime         @updatedAt
-  prestador    PrestadorServico @relation(fields: [prestadorId], references: [id])
-  prestadorId  String
-}
-
-model Usuario {
-  id       String @id @default(uuid())
-  nome     String
-  foto     String //saber depois como usar e qual o tipo será
-  email    String @unique
-  senha    String
-  telefone String
+  id            String           @id @default(uuid())
+  titulo        String
+  descricao     String
+  preco         String
+  servico       String
+  latitude      String
+  longitude     String
+  dtCriacao     DateTime         @default(now())
+  dtAtualizacao DateTime         @updatedAt
+  prestador     PrestadorServico @relation(fields: [prestadorId], references: [usuarioIdPrestador])
+  prestadorId   String
 }
