@@ -19,7 +19,7 @@ export async function criarAnuncio(req: Request, res: Response) {
                 servico,
                 prestador: {
                     connect: {
-                        id: id
+                        usuarioIdPrestador: id
                     }
                 }
             }
