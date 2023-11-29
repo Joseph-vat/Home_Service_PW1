@@ -1,11 +1,8 @@
-import { log } from "console";
-import { prismaClient } from "./prismaClient";
-import express, { Request, Response, NextFunction } from 'express';
+import { prismaClient } from "../../prismaClient";
+import express, { Request, Response} from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
-import { retornaPrestadorExistente } from "./middlewares";
 import jwt from 'jsonwebtoken';
-import { autenticaToken } from "./middlewares";
 
 
 const app = express();
@@ -14,12 +11,8 @@ app.use(express.json())
 
 
 //criando prestador de serviço e criptografando a senha
-app.post('/prestador', async (req, res) => {
+export async function criarPrestador (req: Request, res: Response) {
     const { nome, email, senha, telefone, foto, cnpj, horarioDisponibilidade } = req.body
-    console.log(cnpj);
-    console.log("aqui");
-
-
     const comparaUser = await prismaClient.usuario.findUnique({
         where: {
             email: email
@@ -45,7 +38,7 @@ app.post('/prestador', async (req, res) => {
                 horarioDisponibilidade,
                 anuncios: {
                     create: []
-                },
+                }, 
                 usuario: {
                     connect: {
                         id: novoUsuario.id
@@ -53,16 +46,16 @@ app.post('/prestador', async (req, res) => {
                 }
             }
         });
-        res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+        res.status(201).json({ message: 'Prestador de serviço criado com sucesso'});
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
-})
+};
 
 
 
 //Cria token para determinado usuario (Fazer login)
-app.post('/login', retornaPrestadorExistente, async (req, res) => {
+export async function fazerLogin (req: Request, res: Response) {
     const { email, senha } = req.body
     const retornaUsuarioPrestador = await prismaClient.usuario.findUnique({
         where: {
@@ -89,11 +82,10 @@ app.post('/login', retornaPrestadorExistente, async (req, res) => {
 
     }
 
-})
-
+};
 
 // Atualizando perfil do prestador
-app.put('/prestador', retornaPrestadorExistente, autenticaToken, async (req, res) => {
+export async function atulizarPerfilPrestador (req: Request, res: Response) {
     const { nome, telefone, endereco, foto, cnpj, horarioDisponibilidade } = req.body
     const id = req.autenticado
 
@@ -121,11 +113,11 @@ app.put('/prestador', retornaPrestadorExistente, autenticaToken, async (req, res
     } catch (error) {
         return res.status(404).json({ error: "Erro a atualizar prestador" })
     }
-})
+};
 
 
 // Atualizando dados de segurança do prestador (email e senha)
-app.put('/prestador/dadosSeguranca', retornaPrestadorExistente, autenticaToken, async (req, res) => {
+export async function atualizarSegurancaPrestador (req: Request, res: Response) {
     const { email, senha } = req.body
     const id = req.autenticado
     const senhaCriptografada = await hash(senha, 5)
@@ -144,11 +136,11 @@ app.put('/prestador/dadosSeguranca', retornaPrestadorExistente, autenticaToken, 
     } catch (error) {
         return res.status(404).json({ error: "Erro a atualizar prestador" })
     }
-})
+};
 
 
-// Listando todos os usuários com detalhes de prestadores (se existirem)
-app.get('/prestador', async (req, res) => {
+// Listando todos os usuários prestaores com detalhes
+export async function listarTodosPrestadores (req: Request, res: Response) {
     try {
         const usuariosComPrestadores = await prismaClient.usuario.findMany({
             select: {
@@ -171,12 +163,12 @@ app.get('/prestador', async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: "Erro ao obter usuários e prestadores de serviço" });
     }
-});
+};
 
 
 
 // Listando os prestadores por tipo de serviço
-app.get('/prestadorservico', async (req, res) => {
+export async function listarPrestadoresPorServico(req: Request, res: Response){
     const servico = <string>req.body.servico.toLowerCase();
     try {
         const prestadores = await prismaClient.prestadorServico.findMany({
@@ -190,7 +182,16 @@ app.get('/prestadorservico', async (req, res) => {
                 }
             },
             include: {
-                usuario: true 
+                usuario: {
+                    select: {
+                        id: false,
+                        nome: true,
+                        email: true,
+                        telefone: true,
+                        foto: true,
+                        // cliente: true,  verificar depois se eu quiser ver clientes associados a prestador
+                    }
+                },
             }
         });
 
@@ -198,14 +199,27 @@ app.get('/prestadorservico', async (req, res) => {
             return res.status(404).json({ error: 'Nenhum prestador encontrado para esse serviço' });
         }
 
-        res.json({ prestadores });
+        const prestadoresComUsuarioPrimeiro = prestadores.map((prestador) => {
+            return {
+                ...prestador.usuario,
+                prestador: {
+                    cnpj: prestador.cnpj,
+                    horarioDisponibilidade: prestador.horarioDisponibilidade
+                }
+            };
+        });
+
+        res.json({ prestadores: prestadoresComUsuarioPrimeiro });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
     }
-});
+};
 
 
-app.delete('/prestador', retornaPrestadorExistente, autenticaToken, async (req, res) => {
+
+
+
+export async function deletarPrestador (req: Request, res: Response){
     const id = req.autenticado; // id do usuario autenticado
     console.log(id);
     
@@ -246,10 +260,4 @@ app.delete('/prestador', retornaPrestadorExistente, autenticaToken, async (req, 
         // Caso haja falha ao deletar os anúncios do prestador
         return res.status(500).json({ error: 'Erro ao deletar os anúncios do prestador', details: error });
     }
-});
-
-
-
-app.listen(3005, () => {
-    console.log("conectado");
-})
+};

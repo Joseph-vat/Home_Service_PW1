@@ -4,8 +4,9 @@ import express, { Request, Response, NextFunction } from 'express';
 
 // cria anuncio associado a um prestador 
 export async function criarAnuncio(req: Request, res: Response) {
-    const { titulo, descricao, preco, servico, latitude, longitude } = req.body;
+    const { titulo, descricao, latitude, longitude, preco, servico } = req.body;
     const id = req.autenticado;
+    
 
     try {
 
@@ -13,13 +14,13 @@ export async function criarAnuncio(req: Request, res: Response) {
             data: {
                 titulo,
                 descricao,
-                latitude,
-                longitude,
                 preco,
                 servico,
+                latitude,
+                longitude,
                 prestador: {
                     connect: {
-                        usuarioIdPrestador: id
+                       usuarioIdPrestador : id
                     }
                 }
             }

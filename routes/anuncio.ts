@@ -1,7 +1,7 @@
 // import { retornaPrestadorExistente } from "./middlewares";
-import { retornaPrestadorExistente } from "../../middlewares";
-import { autenticaToken } from "../../middlewares"; 
-import { criarAnuncio, deletaAnuncio, editaAnuncio, listaAnuncioPrestador, listaTodosAnuncios } from "../../controller/anuncioController/anuncioController";
+import { retornaPrestadorExistente } from "../middlewares";
+import { autenticaToken } from "../middlewares"; 
+import { criarAnuncio, deletaAnuncio, editaAnuncio, listaAnuncioPrestador, listaTodosAnuncios } from "../controller/anuncioController/anuncioController";
 import express from 'express';
 
 

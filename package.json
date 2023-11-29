@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsx ./prestador.ts"
+    "start": "tsx ./server.ts"
   },
   "keywords": [],
   "author": "",
