@@ -3,9 +3,9 @@ import express, { Request, Response, NextFunction } from 'express';
 
 
 // cria anuncio associado a um prestador 
-export async function criarAnuncio (req:Request, res:Response) {
+export async function criarAnuncio(req: Request, res: Response) {
     const { titulo, descricao, preco, servico, latitude, longitude } = req.body;
-    const id = req.userExpr.id;
+    const id = req.autenticado;
 
     try {
 
@@ -33,7 +33,7 @@ export async function criarAnuncio (req:Request, res:Response) {
 };
 
 // lista os anuncios associados a um prestador
-export async function listaAnuncioPrestador (req:Request, res:Response) {
+export async function listaAnuncioPrestador(req: Request, res: Response) {
     const prestadorId = req.userExpr.id
     try {
         const anuncios = await prismaClient.anuncio.findMany({
@@ -49,7 +49,7 @@ export async function listaAnuncioPrestador (req:Request, res:Response) {
 };
 
 // lista todos os anuncios cadastrados
-export async function listaTodosAnuncios (req:Request, res:Response) {
+export async function listaTodosAnuncios(req: Request, res: Response) {
     try {
         const todosAnuncios = await prismaClient.anuncio.findMany();
         return res.status(200).json(todosAnuncios)
@@ -60,10 +60,10 @@ export async function listaTodosAnuncios (req:Request, res:Response) {
 };
 
 // edita um anuncio 
-export async function editaAnuncio (req:Request, res:Response) {
+export async function editaAnuncio(req: Request, res: Response) {
     try {
         const { titulo, descricao, preco, servico, latitude, longitude } = req.body
-        const { id } = req.params;
+        const id = req.autenticado;
         const anuncioEditado = await prismaClient.anuncio.update({
             where: {
                 id: id
@@ -85,8 +85,8 @@ export async function editaAnuncio (req:Request, res:Response) {
 };
 
 // deleta um anuncio
-export async function deletaAnuncio (req:Request, res:Response) {
-    const { id } = req.params // id do anuncio que desejo deletar
+export async function deletaAnuncio(req: Request, res: Response) {
+    const id = req.autenticado // id do anuncio que desejo deletar
 
     try {
         const anuncioDeletado = await prismaClient.anuncio.delete({

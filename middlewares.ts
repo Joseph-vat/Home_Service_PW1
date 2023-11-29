@@ -19,6 +19,22 @@ export async function retornaPrestadorExistente(req: Request, res: Response, nex
     }
 }
 
+//Funcão Middleware que checara se existe o usuario requerido no banco de dados
+export async function retornaUsuarioExistente(req: Request, res: Response, next: NextFunction) {
+    const email = String(req.headers.email);
+    const usuarioEncontrado = await prismaClient.usuario.findUnique({
+        where: {
+            email: email
+        }
+    })
+    if (usuarioEncontrado !== null) {
+        req.userExpr = usuarioEncontrado
+        next();
+    } else {
+        res.status(500).json({ error: "Usuario não existe." });
+    }
+}
+
 //Funcão Middleware que autentica o token
 export async function autenticaToken(req: Request, res: Response, next: NextFunction) {
     const autenticaHeader = req.headers.authorization
