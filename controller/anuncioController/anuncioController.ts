@@ -7,9 +7,7 @@ export async function criarAnuncio(req: Request, res: Response) {
     const { titulo, descricao, latitude, longitude, preco, servico } = req.body;
     const id = req.autenticado;
     
-
     try {
-
         const novoAnunicio = await prismaClient.anuncio.create({
             data: {
                 titulo,

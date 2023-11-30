@@ -1,14 +1,17 @@
-import { retornaPrestadorExistente } from "../middlewares"; 
-import { autenticaToken } from "../middlewares"; 
+import { retornaPrestadorExistente } from "../../middlewares"; 
+import { autenticaToken } from "../../middlewares"; 
 import express from 'express';
-import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atulizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador } from "../controller/anuncioController/prestadorController";
+import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atulizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador } from "../../controller/prestadorController/prestadorController";
+import { upload } from "../../config/multerConfig";
 
 const prestadorRoutes = express();
 prestadorRoutes.use(express.json())
 
 
 //criando prestador de serviço e criptografando a senha
-prestadorRoutes.post('/prestador', criarPrestador) 
+prestadorRoutes.post('/prestador', upload.single('file'), criarPrestador) 
+
+prestadorRoutes.put('/prestadorFoto', criarPrestador)
 
 //Cria token para determinado usuario (Fazer login)
 prestadorRoutes.post('/login', retornaPrestadorExistente, fazerLogin)

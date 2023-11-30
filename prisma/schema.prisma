@@ -46,6 +46,6 @@ model Anuncio {
   longitude     String
   dtCriacao     DateTime         @default(now())
   dtAtualizacao DateTime         @updatedAt
-  prestador     PrestadorServico @relation(fields: [prestadorId], references: [usuarioIdPrestador])
   prestadorId   String
+  prestador     PrestadorServico @relation(fields: [prestadorId], references: [usuarioIdPrestador])
 }
