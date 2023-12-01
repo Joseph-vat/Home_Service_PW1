@@ -11,14 +11,10 @@ anuncioRoutes.use(express.json())
 
 
 // cria anuncio associado a um prestador 
-anuncioRoutes.post('/anuncio', retornaPrestadorExistente, criarAnuncio);
-
-anuncioRoutes.put('/anuncioFoto', retornaPrestadorExistente, upload.single('file'), autenticaToken, (req, res) => {
-    ''
-})
+anuncioRoutes.post('/anuncio', retornaPrestadorExistente, autenticaToken, criarAnuncio);
 
 // lista os anuncios associados a um prestador
-anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, autenticaToken, listaAnuncioPrestador);
+anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, listaAnuncioPrestador);
 
 // lista todos os anuncios cadastrados
 anuncioRoutes.get('/anuncios', listaTodosAnuncios);
