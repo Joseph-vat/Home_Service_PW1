@@ -1,6 +1,6 @@
 import express from 'express';
-import { anuncioRoutes } from './anuncio';
-import { prestadorRoutes } from './prestador';
+import { anuncioRoutes } from './anuncioRoutes/anuncioRoutes';
+import { prestadorRoutes } from './prestadorRoutes/prestadorRoutes';
 
 const routes = express();
 
