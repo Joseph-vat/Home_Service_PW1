@@ -42,8 +42,8 @@ model Anuncio {
   descricao     String
   preco         String
   servico       String
-  latitude      String
-  longitude     String
+  latitude      Float   
+  longitude     Float   
   dtCriacao     DateTime         @default(now())
   dtAtualizacao DateTime         @updatedAt
   prestador     PrestadorServico @relation(fields: [prestadorId], references: [usuarioIdPrestador])

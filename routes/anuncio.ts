@@ -10,18 +10,18 @@ anuncioRoutes.use(express.json())
 
 
 // cria anuncio associado a um prestador 
-anuncioRoutes.post('/anuncio', retornaPrestadorExistente, criarAnuncio);
+anuncioRoutes.post('/anuncio', retornaPrestadorExistente, autenticaToken, criarAnuncio);
 
 // lista os anuncios associados a um prestador
-anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, autenticaToken, listaAnuncioPrestador);
+anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, listaAnuncioPrestador);
 
 // lista todos os anuncios cadastrados
 anuncioRoutes.get('/anuncios', listaTodosAnuncios);
 
 // edita um anuncio 
-anuncioRoutes.put('/anuncios', autenticaToken, editaAnuncio);
+anuncioRoutes.put('/anuncios/:id',retornaPrestadorExistente, autenticaToken, editaAnuncio);
 
 // deleta um anuncio
-anuncioRoutes.delete('/anuncio', autenticaToken, deletaAnuncio);
+anuncioRoutes.delete('/anuncio/:id',retornaPrestadorExistente, autenticaToken, deletaAnuncio);
 
 export { anuncioRoutes }

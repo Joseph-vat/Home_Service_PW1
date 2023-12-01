@@ -1,8 +1,10 @@
 import { prismaClient } from "../../prismaClient";
-import express, { Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
+import { validaPrestador } from "../../validacoes/validaPrestador";
+
 
 
 const app = express();
@@ -10,52 +12,119 @@ app.use(express.json())
 
 
 
+
 //criando prestador de serviço e criptografando a senha
-export async function criarPrestador (req: Request, res: Response) {
+// export async function criarPrestador(req: Request, res: Response) {
+//     const { nome, email, senha, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+
+//     //mandando dados para a função validaPrestador que validara os dados antes de serem criados no banco
+//     const validacaoResult = await validaPrestador({
+//         nome,
+//         email,
+//         senha,
+//         telefone,
+//         foto,
+//         cnpj,
+//         horarioDisponibilidade
+//     });
+
+//     if (validacaoResult !== null) {
+//         return res.status(400).json({ error: validacaoResult });
+//     }
+
+//     const comparaUser = await prismaClient.usuario.findUnique({
+//         where: {
+//             email: email
+//         },
+//     })
+//     if (comparaUser !== null) {
+//         return res.status(400).json({ error: "Prestador já existe na base de dados. Cadastre um novo prestador!" })
+//     }
+//     try {
+//         const senhaCriptografada = await hash(senha, 5)
+//         const novoUsuario = await prismaClient.usuario.create({
+//             data: {
+//                 nome,
+//                 email,
+//                 senha: senhaCriptografada,
+//                 telefone,
+//                 foto
+//             }
+//         })
+//         const novoPrestador = await prismaClient.prestadorServico.create({
+//             data: {
+//                 cnpj,
+//                 horarioDisponibilidade,
+//                 anuncios: {
+//                     create: []
+//                 },
+//                 usuario: {
+//                     connect: {
+//                         id: novoUsuario.id
+//                     }
+//                 }
+//             }
+//         });
+//         res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+//     } catch (error) {
+//         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
+//     }
+// };
+
+export async function criarPrestador(req: Request, res: Response) {
     const { nome, email, senha, telefone, foto, cnpj, horarioDisponibilidade } = req.body
-    const comparaUser = await prismaClient.usuario.findUnique({
-        where: {
-            email: email
-        },
-    })
-    if (comparaUser !== null) {
-        return res.status(400).json({ error: "Prestador já existe na base de dados. Cadastre um novo prestador!" })
+  
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestador({
+      nome,
+      email,
+      senha,
+      telefone,
+      foto,
+      cnpj,
+      horarioDisponibilidade
+    });
+  
+    if (validacaoResult !== null) {
+      return res.status(400).json({ error: validacaoResult });
     }
+  
+    // Criando o prestador se a validação passar
     try {
-        const senhaCriptografada = await hash(senha, 5)
-        const novoUsuario = await prismaClient.usuario.create({
-            data: {
-                nome,
-                email,
-                senha: senhaCriptografada,
-                telefone,
-                foto
+      const senhaCriptografada = await hash(senha, 5)
+      const novoUsuario = await prismaClient.usuario.create({
+        data: {
+          nome,
+          email,
+          senha: senhaCriptografada,
+          telefone,
+          foto
+        }
+      })
+      const novoPrestador = await prismaClient.prestadorServico.create({
+        data: {
+          cnpj,
+          horarioDisponibilidade,
+          anuncios: {
+            create: []
+          },
+          usuario: {
+            connect: {
+              id: novoUsuario.id
             }
-        })
-        const novoPrestador = await prismaClient.prestadorServico.create({
-            data: {
-                cnpj,
-                horarioDisponibilidade,
-                anuncios: {
-                    create: []
-                }, 
-                usuario: {
-                    connect: {
-                        id: novoUsuario.id
-                    }
-                }
-            }
-        });
-        res.status(201).json({ message: 'Prestador de serviço criado com sucesso'});
+          }
+        }
+      });
+      res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
+      res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
-};
+  };
 
 
 
 //Cria token para determinado usuario (Fazer login)
-export async function fazerLogin (req: Request, res: Response) {
+export async function fazerLogin(req: Request, res: Response) {
     const { email, senha } = req.body
     const retornaUsuarioPrestador = await prismaClient.usuario.findUnique({
         where: {
@@ -85,7 +154,7 @@ export async function fazerLogin (req: Request, res: Response) {
 };
 
 // Atualizando perfil do prestador
-export async function atulizarPerfilPrestador (req: Request, res: Response) {
+export async function atulizarPerfilPrestador(req: Request, res: Response) {
     const { nome, telefone, endereco, foto, cnpj, horarioDisponibilidade } = req.body
     const id = req.autenticado
 
@@ -117,7 +186,7 @@ export async function atulizarPerfilPrestador (req: Request, res: Response) {
 
 
 // Atualizando dados de segurança do prestador (email e senha)
-export async function atualizarSegurancaPrestador (req: Request, res: Response) {
+export async function atualizarSegurancaPrestador(req: Request, res: Response) {
     const { email, senha } = req.body
     const id = req.autenticado
     const senhaCriptografada = await hash(senha, 5)
@@ -140,7 +209,7 @@ export async function atualizarSegurancaPrestador (req: Request, res: Response) 
 
 
 // Listando todos os usuários prestaores com detalhes
-export async function listarTodosPrestadores (req: Request, res: Response) {
+export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
         const usuariosComPrestadores = await prismaClient.usuario.findMany({
             select: {
@@ -168,8 +237,10 @@ export async function listarTodosPrestadores (req: Request, res: Response) {
 
 
 // Listando os prestadores por tipo de serviço
-export async function listarPrestadoresPorServico(req: Request, res: Response){
+export async function listarPrestadoresPorServico(req: Request, res: Response) {
     const servico = <string>req.body.servico.toLowerCase();
+    console.log(servico);
+
     try {
         const prestadores = await prismaClient.prestadorServico.findMany({
             where: {
@@ -219,10 +290,10 @@ export async function listarPrestadoresPorServico(req: Request, res: Response){
 
 
 
-export async function deletarPrestador (req: Request, res: Response){
+export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado
     console.log(id);
-    
+
     try {
         // Deletando todos os anúncios do usuário Prestador antes de deletar o prestador
         await prismaClient.anuncio.deleteMany({

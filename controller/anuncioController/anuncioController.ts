@@ -1,12 +1,27 @@
 import { prismaClient } from "../../prismaClient";
 import express, { Request, Response, NextFunction } from 'express';
+import { validaAnuncio } from "../../validacoes/validaAnuncio";
 
 
 // cria anuncio associado a um prestador 
 export async function criarAnuncio(req: Request, res: Response) {
-    const { titulo, descricao, latitude, longitude, preco, servico } = req.body;
+    const { titulo, descricao, latitude, longitude, preco} = req.body;
+    const servico= <string>req.body.servico.toLowerCase();       
     const id = req.autenticado;
+
+     // Validando os dados do anúncio
+     const validacaoResult = await validaAnuncio({
+        titulo,
+        descricao,
+        preco,
+        servico,
+        latitude,
+        longitude
+      });
     
+      if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+      }
 
     try {
 
@@ -16,8 +31,8 @@ export async function criarAnuncio(req: Request, res: Response) {
                 descricao,
                 preco,
                 servico,
-                latitude,
-                longitude,
+                latitude: parseFloat(latitude), 
+                longitude: parseFloat(longitude),
                 prestador: {
                     connect: {
                        usuarioIdPrestador : id
@@ -64,7 +79,7 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
 export async function editaAnuncio(req: Request, res: Response) {
     try {
         const { titulo, descricao, preco, servico, latitude, longitude } = req.body
-        const id = req.autenticado;
+        const id = req.params.id;
         const anuncioEditado = await prismaClient.anuncio.update({
             where: {
                 id: id
@@ -72,8 +87,8 @@ export async function editaAnuncio(req: Request, res: Response) {
             data: {
                 titulo,
                 descricao,
-                latitude,
-                longitude,
+                latitude: parseFloat(latitude), 
+                longitude: parseFloat(longitude),   
                 preco,
                 servico
             }
@@ -87,12 +102,12 @@ export async function editaAnuncio(req: Request, res: Response) {
 
 // deleta um anuncio
 export async function deletaAnuncio(req: Request, res: Response) {
-    const id = req.autenticado // id do anuncio que desejo deletar
+    const id = req.params.id 
 
     try {
         const anuncioDeletado = await prismaClient.anuncio.delete({
             where: {
-                id
+                id:id 
             }
         });
         res.status(200).json(anuncioDeletado);
