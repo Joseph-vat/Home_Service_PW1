@@ -12,7 +12,7 @@ app.use(express.json())
 
 
 
-
+//Criando Prestador de Serviço e validando seus dados
 export async function criarPrestador(req: Request, res: Response) {
     const { nome, email, senha, telefone, cnpj, horarioDisponibilidade } = req.body
 
@@ -113,7 +113,7 @@ export async function atualizarFotoPerfilPrestador (req: Request, res: Response)
     } catch (error) {
         return res.status(404).json({ error: "Erro a atualizar prestador" })
     }
-}
+};
 
 
 // Atualizando perfil do prestador
@@ -159,40 +159,7 @@ export async function atulizarPerfilPrestador(req: Request, res: Response) {
     } catch (error) {
         return res.status(404).json({ error: "Erro a atualizar prestador" })
     }
-
-
-
-
-
-
-
-
-    try {
-        const atualizaUsuario = await prismaClient.usuario.update({
-            where: {
-                id: id
-            },
-            data: {
-                nome,
-                telefone,
-                foto
-            }
-        })
-        const atualizaPrestador = await prismaClient.prestadorServico.update({
-            where: {
-                usuarioIdPrestador: id
-            },
-            data: {
-                cnpj,
-                horarioDisponibilidade
-            }
-        })
-        return res.status(201).json("Prestador atualizado com sucesso ")
-    } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
-    }
 };
-
 
 // Atualizando dados de segurança do prestador (email e senha)
 export async function atualizarSegurancaPrestador(req: Request, res: Response) {
@@ -306,10 +273,7 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
     }
 };
 
-
-
-
-
+//Deletando prestador
 export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado
     console.log(id);
