@@ -14,7 +14,7 @@ app.use(express.json())
 
 
 export async function criarPrestador(req: Request, res: Response) {
-    const { nome, email, senha, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+    const { nome, email, senha, telefone, cnpj, horarioDisponibilidade } = req.body
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorCriacao({
@@ -22,7 +22,6 @@ export async function criarPrestador(req: Request, res: Response) {
         email,
         senha,
         telefone,
-        foto,
         cnpj,
         horarioDisponibilidade
     });
@@ -40,7 +39,6 @@ export async function criarPrestador(req: Request, res: Response) {
                 email,
                 senha: senhaCriptografada,
                 telefone,
-                foto
             }
         })
         const novoPrestador = await prismaClient.prestadorServico.create({
@@ -94,6 +92,29 @@ export async function fazerLogin(req: Request, res: Response) {
     }
 
 };
+
+
+//criar foto do perfil 
+export async function atualizarFotoPerfilPrestador (req: Request, res: Response) {
+
+    const idUsuario = req.autenticado
+    const nomeFoto = req.file?.filename as string
+
+    try {
+        const atualizaUsuario = await prismaClient.usuario.update({
+            where: {
+                id: idUsuario
+            },
+            data: {
+                foto: nomeFoto
+            }
+        })
+        return res.status(200).json("Foto atualizada com sucesso!")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro a atualizar prestador" })
+    }
+}
+
 
 // Atualizando perfil do prestador
 export async function atulizarPerfilPrestador(req: Request, res: Response) {
@@ -208,7 +229,7 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
 };
 
 
-// Listando todos os usuários prestaores com detalhes
+// Listando todos os usuários prestadores com detalhes
 export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
         const usuariosComPrestadores = await prismaClient.usuario.findMany({
@@ -239,7 +260,6 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
 // Listando os prestadores por tipo de serviço
 export async function listarPrestadoresPorServico(req: Request, res: Response) {
     const servico = <string>req.body.servico.toLowerCase();
-    console.log(servico);
 
     try {
         const prestadores = await prismaClient.prestadorServico.findMany({

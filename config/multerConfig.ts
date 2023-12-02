@@ -1,13 +1,19 @@
+import crypto from 'node:crypto';
 import multer from 'multer';
+import { resolve } from 'node:path';
 
-// Configuração do Multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Diretório de destino dos arquivos
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Nome do arquivo
-  }
-});
 
-export const upload = multer({ storage: storage });
+const fileHash = crypto.randomBytes(16).toString('hex');
+
+export function upload(destination: string) {
+  return multer({
+    storage: multer.diskStorage({
+      destination: resolve(__dirname, "..", destination),
+      filename: (req, file, cb) => {
+        const filename = `${fileHash}-${file.originalname}`;
+
+        cb(null, filename);
+      },
+    }),
+  }).single('file'); // 'arquivo' é o nome do campo no formulário que contém o arquivo
+}

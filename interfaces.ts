@@ -17,7 +17,6 @@ export interface usuarioPrestador {
     email: string;
     senha: string;
     telefone: string;
-    foto: string;
     cnpj: string;
     horarioDisponibilidade: string;
 }

@@ -16,7 +16,7 @@ model Usuario {
   email     String            @unique
   senha     String
   telefone  String
-  foto      String //saber depois como usar e qual o tipo será
+  foto      String? //saber depois como usar e qual o tipo será
   prestador PrestadorServico?
   cliente   Cliente?
 }
@@ -42,8 +42,8 @@ model Anuncio {
   descricao     String
   preco         String
   servico       String
-  latitude      Float   
-  longitude     Float   
+  latitude      Float
+  longitude     Float
   dtCriacao     DateTime         @default(now())
   dtAtualizacao DateTime         @updatedAt
   prestadorId   String

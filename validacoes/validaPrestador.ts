@@ -38,7 +38,6 @@ export function validaPrestadorCriacao(prestador: usuarioPrestador) {
       .refine((value) => validaHorarioDisponibilidade(value), {
         message: 'Horário de disponibilidade incorreto: digite no padrão "8h às 18h".',
       }),
-    foto: z.string({ required_error: 'Campo foto é obrigatório' }),
   })
 
   const result = schema.safeParse(prestador);
