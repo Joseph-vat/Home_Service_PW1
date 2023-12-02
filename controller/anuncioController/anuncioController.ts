@@ -76,9 +76,23 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
 
 // edita um anuncio 
 export async function editaAnuncio(req: Request, res: Response) {
+    const { titulo, descricao, preco, servico, latitude, longitude } = req.body
+    const id = req.params.id;
+    
+     // Validando os dados do anúncio
+     const validacaoResult = await validaAnuncio({
+        titulo,
+        descricao,
+        preco,
+        servico,
+        latitude,
+        longitude
+      });
+    
+      if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+      }
     try {
-        const { titulo, descricao, preco, servico, latitude, longitude } = req.body
-        const id = req.params.id;
         const anuncioEditado = await prismaClient.anuncio.update({
             where: {
                 id: id

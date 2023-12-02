@@ -20,9 +20,9 @@ anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, listaAnuncioP
 anuncioRoutes.get('/anuncios', listaTodosAnuncios);
 
 // edita um anuncio 
-anuncioRoutes.put('/anuncios', retornaPrestadorExistente, autenticaToken, editaAnuncio);
+anuncioRoutes.put('/anuncios/:id', retornaPrestadorExistente, autenticaToken, editaAnuncio);
 
 // deleta um anuncio
-anuncioRoutes.delete('/anuncio', retornaPrestadorExistente, autenticaToken, deletaAnuncio);
+anuncioRoutes.delete('/anuncio/:id', retornaPrestadorExistente, autenticaToken, deletaAnuncio);
 
 export { anuncioRoutes }
