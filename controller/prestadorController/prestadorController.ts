@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
+import { validaPrestadorAtulizacao, validaPrestadorCriacao, validaPrestadorSeguranca } from "../../validacoes/validaPrestador";
 
 
 
@@ -10,6 +11,57 @@ const app = express();
 app.use(express.json())
 
 
+
+
+export async function criarPrestador(req: Request, res: Response) {
+    const { nome, email, senha, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestadorCriacao({
+        nome,
+        email,
+        senha,
+        telefone,
+        foto,
+        cnpj,
+        horarioDisponibilidade
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
+    // Criando o prestador se a validação passar
+    try {
+        const senhaCriptografada = await hash(senha, 5)
+        const novoUsuario = await prismaClient.usuario.create({
+            data: {
+                nome,
+                email,
+                senha: senhaCriptografada,
+                telefone,
+                foto
+            }
+        })
+        const novoPrestador = await prismaClient.prestadorServico.create({
+            data: {
+                cnpj,
+                horarioDisponibilidade,
+                anuncios: {
+                    create: []
+                },
+                usuario: {
+                    connect: {
+                        id: novoUsuario.id
+                    }
+                }
+            }
+        });
+        res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
+    }
+};
 
 
 
@@ -45,8 +97,54 @@ export async function fazerLogin(req: Request, res: Response) {
 
 // Atualizando perfil do prestador
 export async function atulizarPerfilPrestador(req: Request, res: Response) {
-    const { nome, telefone, endereco, foto, cnpj, horarioDisponibilidade } = req.body
     const id = req.autenticado
+    const { nome, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestadorAtulizacao({
+        nome,
+        telefone,
+        foto,
+        cnpj,
+        horarioDisponibilidade,
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
+    // Atualizando o prestador se a validação passar
+    try {
+        const atualizaUsuario = await prismaClient.usuario.update({
+            where: {
+                id: id
+            },
+            data: {
+                nome,
+                telefone,
+                foto
+            }
+        })
+        const atualizaPrestador = await prismaClient.prestadorServico.update({
+            where: {
+                usuarioIdPrestador: id
+            },
+            data: {
+                cnpj,
+                horarioDisponibilidade
+            }
+        })
+        return res.status(201).json("Prestador atualizado com sucesso ")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro a atualizar prestador" })
+    }
+
+
+
+
+
+
+
 
     try {
         const atualizaUsuario = await prismaClient.usuario.update({
@@ -79,8 +177,20 @@ export async function atulizarPerfilPrestador(req: Request, res: Response) {
 export async function atualizarSegurancaPrestador(req: Request, res: Response) {
     const { email, senha } = req.body
     const id = req.autenticado
-    const senhaCriptografada = await hash(senha, 5)
 
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestadorSeguranca({
+        email,
+        senha
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
+    // Atualizando o prestador se a validação passar
+
+    const senhaCriptografada = await hash(senha, 5)
     try {
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
