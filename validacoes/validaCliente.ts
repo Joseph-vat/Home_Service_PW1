@@ -26,7 +26,7 @@ export const validaClienteCriacao = (cliente: usuarioCliente) => {
             message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
         }),
         cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
-            .min(11, 'O CPF deve ter 11 caracteres'),
+            .refine((value) => validaCpf(value), { message: 'CPF incorreto: digite no padrão XXX.XXX.XXX-XX.' }),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })
@@ -50,7 +50,7 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
         }),
         foto: z.string({ required_error: 'Campo foto é obrigatório' }),
         cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
-            .min(11, 'O CPF deve ter 11 caracteres'),
+            .refine((value) => validaCpf(value), { message: 'CPF incorreto: digite no padrão XXX.XXX.XXX-XX.' }),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })

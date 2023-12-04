@@ -182,3 +182,36 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
         return res.status(404).json({ error: "Erro a atualizar cliente" })
     }
 };
+//Listando todos os clientes
+export async function listarClientes(req: Request, res: Response) {
+    try {
+        const clientes = await prismaClient.cliente.findMany({
+            include: {
+                usuario: true
+            }
+        })
+        return res.status(200).json(clientes)
+    } catch (error) {
+        return res.status(404).json({ error: "Erro ao listar clientes" })
+    }
+};
+
+//Deletando cliente
+export async function deletarCliente(req: Request, res: Response) {
+    const id = req.autenticado
+    try {
+        const deletaCliente = await prismaClient.cliente.delete({
+            where: {
+                usuarioIdCliente: id
+            }
+        })
+        const deletaUsuario = await prismaClient.usuario.delete({
+            where: {
+                id: id
+            }
+        })
+        return res.status(200).json("Cliente deletado com sucesso")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro ao deletar cliente" })
+    }
+};
