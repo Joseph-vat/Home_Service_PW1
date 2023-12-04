@@ -50,3 +50,8 @@ export interface usuarioClienteAtualizacao {
     cpf: string;
     endereco: string;
 }
+
+export interface usuarioClienteAtualizacaoDadosSensiveis {
+    email: string;
+    senha: string;
+}

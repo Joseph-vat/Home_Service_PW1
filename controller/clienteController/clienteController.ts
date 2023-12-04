@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import {validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
+import {validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
 
 const app = express();
 app.use(express.json())
@@ -141,6 +141,40 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
             data: {
                 cpf,
                 endereco
+            }
+        })
+        return res.status(201).json("Cliente atualizado com sucesso ")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro a atualizar cliente" })
+    }
+};
+
+// Atualizando dados de segurança do cliente (email e senha)
+export async function atualizarSegurancaCliente(req: Request, res: Response) {
+    const { email, senha } = req.body
+    const id = req.autenticado
+
+    // Validando os dados do cliente
+    const validacaoResult = await validaClienteSeguranca({
+        email,
+        senha
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
+    // Atualizando o cliente se a validação passar
+
+    const senhaCriptografada = await hash(senha, 5)
+    try {
+        const atualizaUsuario = await prismaClient.usuario.update({
+            where: {
+                id: id
+            },
+            data: {
+                email,
+                senha: senhaCriptografada
             }
         })
         return res.status(201).json("Cliente atualizado com sucesso ")

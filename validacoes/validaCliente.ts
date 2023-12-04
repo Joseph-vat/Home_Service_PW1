@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { usuarioCliente, usuarioClienteAtualizacao} from '../interfaces';
+import { usuarioCliente, usuarioClienteAtualizacao, usuarioClienteAtualizacaoDadosSensiveis} from '../interfaces';
 import { type } from 'os';
 
 const validaTelefone = (telefone: string): boolean => {
@@ -53,6 +53,24 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
             .min(11, 'O CPF deve ter 11 caracteres'),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
+    })
+
+    const result = schema.safeParse(cliente);
+
+    if (!result.success) {
+        const errors = result.error.errors.map((err: any) => err.message);
+        return errors;
+    }
+    return null; // Retorna null se a validação passar
+}
+
+//Validando dados do cliente na atualização de dados sensivéis (email e senha)
+export function validaClienteSeguranca(cliente: usuarioClienteAtualizacaoDadosSensiveis) {
+    const schema = z.object({
+        email: z.string({ required_error: 'Email é obrigatório' }).trim()
+            .email('E-mail inválido'),
+        senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
+            .min(6, 'A senha deve ter pelo menos 6 caracteres'),
     })
 
     const result = schema.safeParse(cliente);
