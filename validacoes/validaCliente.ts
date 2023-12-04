@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { usuarioCliente} from '../interfaces';
+import { usuarioCliente, usuarioClienteAtualizacao} from '../interfaces';
 import { type } from 'os';
 
 const validaTelefone = (telefone: string): boolean => {
@@ -25,6 +25,30 @@ export const validaClienteCriacao = (cliente: usuarioCliente) => {
         telefone: z.string({ required_error: 'Telefone é obrigatório' }).refine((value) => validaTelefone(value), {
             message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
         }),
+        cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
+            .min(11, 'O CPF deve ter 11 caracteres'),
+        endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
+            .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
+    })
+
+    const result = schema.safeParse(cliente);
+
+    if (!result.success) {
+        const errors = result.error.errors.map((err: any) => err.message);
+        return errors;
+    }
+    return null; // Retorna null se a validação passar
+}
+
+//validando dados do cliente na hora da sua atualização
+export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
+    const schema = z.object({
+        nome: z.string({ required_error: 'Nome é obrigatório' }).trim()
+            .min(3, 'O nome deve ter no mínimo 3 caracteres'),
+        telefone: z.string({ required_error: 'Telefone é obrigatório' }).refine((value) => validaTelefone(value), {
+            message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
+        }),
+        foto: z.string({ required_error: 'Campo foto é obrigatório' }),
         cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
             .min(11, 'O CPF deve ter 11 caracteres'),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()

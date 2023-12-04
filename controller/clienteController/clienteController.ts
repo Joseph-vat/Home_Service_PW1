@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import {validaClienteCriacao} from '../../validacoes/validaCliente'
+import {validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
 
 const app = express();
 app.use(express.json())
@@ -36,7 +36,7 @@ export async function criarCliente(req: Request, res: Response) {
                 telefone,
             }
         })
-        const novoPrestador = await prismaClient.cliente.create({
+        const novoCliente = await prismaClient.cliente.create({
             data: {
                 cpf,
                 endereco,
@@ -81,4 +81,70 @@ export async function fazerLogin(req: Request, res: Response) {
 
     }
 
+};
+
+//criar foto do perfil 
+export async function atualizarFotoPerfilCliente (req: Request, res: Response) {
+
+    const idUsuario = req.autenticado
+    const nomeFoto = req.file?.filename as string
+
+    try {
+        const atualizaUsuario = await prismaClient.usuario.update({
+            where: {
+                id: idUsuario
+            },
+            data: {
+                foto: nomeFoto
+            }
+        })
+        return res.status(200).json("Foto atualizada com sucesso!")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro a atualizar cliente" })
+    }
+}
+
+// Atualizando perfil do cliente
+export async function atulizarPerfilCliente(req: Request, res: Response) {
+    const id = req.autenticado
+    const { nome, telefone, foto, cpf, endereco } = req.body
+
+    // Validando os dados do cliente
+    const validacaoResult = await validaClienteAtualizacao({
+        nome,
+        telefone,
+        foto,
+        cpf,
+        endereco
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
+    // Atualizando o cliente se a validação passar
+    try {
+        const atualizaUsuario = await prismaClient.usuario.update({
+            where: {
+                id: id
+            },
+            data: {
+                nome,
+                telefone,
+                foto
+            }
+        })
+        const atualizaCliente = await prismaClient.cliente.update({
+            where: {
+                usuarioIdCliente: id
+            },
+            data: {
+                cpf,
+                endereco
+            }
+        })
+        return res.status(201).json("Cliente atualizado com sucesso ")
+    } catch (error) {
+        return res.status(404).json({ error: "Erro a atualizar cliente" })
+    }
 };

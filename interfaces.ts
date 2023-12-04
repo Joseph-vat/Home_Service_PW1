@@ -42,3 +42,11 @@ export interface usuarioCliente {
     cpf: string;
     endereco: string;
 }
+
+export interface usuarioClienteAtualizacao {
+    nome: string;
+    telefone: string;
+    foto: string;
+    cpf: string;
+    endereco: string;
+}
