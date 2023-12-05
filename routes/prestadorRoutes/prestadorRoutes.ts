@@ -1,7 +1,7 @@
 import { retornaUsuarioExistente} from "../../middlewares"; 
 import { autenticaToken } from "../../middlewares"; 
 import express from 'express';
-import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atulizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador, atualizarFotoPerfilPrestador,  } from "../../controller/prestadorController/prestadorController";
+import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atualizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador, atualizarFotoPerfilPrestador,  } from "../../controller/prestadorController/prestadorController";
 import { upload } from "../../config/multerConfig";
 
 const prestadorRoutes = express();
@@ -18,7 +18,7 @@ prestadorRoutes.post('/login', fazerLogin)
 prestadorRoutes.put('/prestadorFoto', retornaUsuarioExistente, autenticaToken, upload('uploads/prestador'), atualizarFotoPerfilPrestador)
 
 // Atualizando perfil do prestador
-prestadorRoutes.put('/prestador', retornaUsuarioExistente, autenticaToken, atulizarPerfilPrestador)
+prestadorRoutes.put('/prestador', retornaUsuarioExistente, autenticaToken, atualizarPerfilPrestador)
 
 // Atualizando dados de segurança do prestador (email e senha)
 prestadorRoutes.put('/prestador/dadosSeguranca', retornaUsuarioExistente, autenticaToken, atualizarSegurancaPrestador)

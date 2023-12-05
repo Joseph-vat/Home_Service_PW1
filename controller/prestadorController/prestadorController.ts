@@ -12,9 +12,20 @@ app.use(express.json())
 
 
 
-
+// Criar prestador
 export async function criarPrestador(req: Request, res: Response) {
     const { nome, email, senha, telefone, cnpj, horarioDisponibilidade } = req.body
+
+    // Verificar se o cliente já está cadastrado
+    const usuarioCadastro = await prismaClient.usuario.findUnique({
+        where: {
+            email: email,
+        }
+    });
+
+    if (usuarioCadastro !== null) {
+        return res.status(409).json({ error: "Usuário já existe" });
+    }
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorCriacao({
@@ -88,15 +99,14 @@ export async function fazerLogin(req: Request, res: Response) {
             return res.status(201).json(token)
         }
     } catch (error) {
-
+        return res.status(404).json({ error: "Erro ao fazer login do prestador" })
     }
 
 };
 
 
 //criar foto do perfil 
-export async function atualizarFotoPerfilPrestador (req: Request, res: Response) {
-
+export async function atualizarFotoPerfilPrestador(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
 
@@ -111,14 +121,19 @@ export async function atualizarFotoPerfilPrestador (req: Request, res: Response)
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(404).json({ error: "Erro a atualizar foto do prestador" })
     }
 }
 
 
 // Atualizando perfil do prestador
-export async function atulizarPerfilPrestador(req: Request, res: Response) {
+export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
+
+    if (!id) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
     const { nome, telefone, foto, cnpj, horarioDisponibilidade } = req.body
 
     // Validando os dados do prestador
@@ -159,44 +174,17 @@ export async function atulizarPerfilPrestador(req: Request, res: Response) {
     } catch (error) {
         return res.status(404).json({ error: "Erro a atualizar prestador" })
     }
-
-
-
-
-
-
-
-
-    try {
-        const atualizaUsuario = await prismaClient.usuario.update({
-            where: {
-                id: id
-            },
-            data: {
-                nome,
-                telefone,
-                foto
-            }
-        })
-        const atualizaPrestador = await prismaClient.prestadorServico.update({
-            where: {
-                usuarioIdPrestador: id
-            },
-            data: {
-                cnpj,
-                horarioDisponibilidade
-            }
-        })
-        return res.status(201).json("Prestador atualizado com sucesso ")
-    } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
-    }
 };
 
 
 // Atualizando dados de segurança do prestador (email e senha)
 export async function atualizarSegurancaPrestador(req: Request, res: Response) {
     const { email, senha } = req.body
+
+    if (!email || !senha) {
+        return res.status(400).json({ error: 'Dados inválidos ao atualizar a segurança do prestador' });
+    }
+
     const id = req.autenticado
 
     // Validando os dados do prestador
@@ -229,10 +217,15 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
 };
 
 
-// Listando todos os usuários prestadores com detalhes
+// Listando apenas usuários prestadores de serviço
 export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
-        const usuariosComPrestadores = await prismaClient.usuario.findMany({
+        const usuariosPrestadores = await prismaClient.usuario.findMany({
+            where: {
+                prestador: {
+                    isNot: null // Verifica se o campo prestador não é nulo (ou seja, usuário é um prestador)
+                }
+            },
             select: {
                 id: true,
                 nome: true,
@@ -248,12 +241,13 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
             },
         });
 
-        return res.status(200).json(usuariosComPrestadores);
+        return res.status(200).json(usuariosPrestadores);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: "Erro ao obter usuários e prestadores de serviço" });
+        return res.status(500).json({ error: "Erro ao obter prestadores de serviço" });
     }
 };
+
 
 
 
@@ -309,10 +303,9 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
 
 
 
-
+// Deletar prestador
 export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado
-    console.log(id);
 
     try {
         // Deletando todos os anúncios do usuário Prestador antes de deletar o prestador
