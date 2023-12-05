@@ -47,7 +47,7 @@ export async function criarCliente(req: Request, res: Response) {
                 }
             }
         });
-        res.status(201).json({ message: 'Cliente de serviço criado com sucesso' });
+        res.status(201).json({ message: 'Cliente criado com sucesso' });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar cliente' });
     }
@@ -185,10 +185,25 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
 //Listando todos os clientes
 export async function listarClientes(req: Request, res: Response) {
     try {
-        const clientes = await prismaClient.cliente.findMany({
-            include: {
-                usuario: true
-            }
+        const clientes = await prismaClient.usuario.findMany({
+            where: {
+                prestador: {
+                    is: null 
+                }
+            },
+            select: {
+                id: true,
+                nome: true,
+                email: true,
+                telefone: true,
+                foto: true,
+                cliente: {
+                    select: {
+                        cpf: true,
+                        endereco: true,
+                    },
+                },
+            },
         })
         return res.status(200).json(clientes)
     } catch (error) {
