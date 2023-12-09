@@ -129,11 +129,6 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-
-    if (!id) {
-        return res.status(401).json({ error: 'Usuário não autenticado' });
-    }
-
     const { nome, telefone, foto, cnpj, horarioDisponibilidade } = req.body
 
     // Validando os dados do prestador

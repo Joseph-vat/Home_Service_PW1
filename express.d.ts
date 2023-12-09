@@ -2,7 +2,7 @@ type PrestadorServico = {
   id: string;
   nome: string;
   email: string;
-  senha: string;
+  senha: string; 
   telefone: string;
   foto: string?
 }
