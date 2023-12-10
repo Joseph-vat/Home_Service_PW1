@@ -73,7 +73,6 @@ export async function criarPrestador(req: Request, res: Response) {
 };
 
 
-
 //Cria token para determinado usuario (Fazer login)
 export async function fazerLogin(req: Request, res: Response) {
     const { email, senha } = req.body
@@ -96,10 +95,10 @@ export async function fazerLogin(req: Request, res: Response) {
                 { expiresIn: '1d', subject: prestadorId }
             );
 
-            return res.status(201).json(token)
+            return res.status(200).json(token)
         }
     } catch (error) {
-        return res.status(404).json({ error: "Erro ao fazer login do prestador" })
+        return res.status(400).json({ error: "Erro ao fazer login do prestador" })
     }
 
 };
@@ -121,7 +120,7 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar foto do prestador" })
+        return res.status(500).json({ error: "Erro a atualizar foto do prestador" })
     }
 }
 
@@ -165,9 +164,9 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
                 horarioDisponibilidade
             }
         })
-        return res.status(201).json("Prestador atualizado com sucesso ")
+        return res.status(200).json("Prestador atualizado com sucesso ")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(400).json({ error: "Erro a atualizar prestador" })
     }
 };
 
@@ -175,11 +174,6 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
 // Atualizando dados de segurança do prestador (email e senha)
 export async function atualizarSegurancaPrestador(req: Request, res: Response) {
     const { email, senha } = req.body
-
-    if (!email || !senha) {
-        return res.status(400).json({ error: 'Dados inválidos ao atualizar a segurança do prestador' });
-    }
-
     const id = req.autenticado
 
     // Validando os dados do prestador
@@ -205,9 +199,9 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
                 senha: senhaCriptografada
             }
         })
-        return res.status(201).json("Prestador atualizado com sucesso ")
+        return res.status(200).json("Prestador atualizado com sucesso ")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(400).json({ error: "Erro a atualizar prestador" })
     }
 };
 
@@ -242,8 +236,6 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
         return res.status(500).json({ error: "Erro ao obter prestadores de serviço" });
     }
 };
-
-
 
 
 // Listando os prestadores por tipo de serviço
@@ -289,13 +281,11 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
             };
         });
 
-        res.json({ prestadores: prestadoresComUsuarioPrimeiro });
+        res.status(200).json({ prestadores: prestadoresComUsuarioPrimeiro });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
     }
 };
-
-
 
 
 // Deletar prestador
@@ -326,7 +316,7 @@ export async function deletarPrestador(req: Request, res: Response) {
                     },
                 });
 
-                return res.status(201).json({ message: 'Prestador deletado com sucesso!' });
+                return res.status(200).json({ message: 'Prestador deletado com sucesso!' });
             } catch (error) {
                 // Caso haja falha ao deletar o usuário após excluir o prestador
                 return res.status(500).json({ error: 'Erro ao deletar o usuário', details: error });

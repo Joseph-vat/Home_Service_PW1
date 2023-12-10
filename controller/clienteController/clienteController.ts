@@ -75,9 +75,10 @@ export async function fazerLogin(req: Request, res: Response) {
                 { expiresIn: '1d', subject: clienteId }
             );
 
-            return res.status(201).json(token)
+            return res.status(200).json(token)
         }
     } catch (error) {
+        return res.status(400).json({ error: "Erro ao fazer login do usuário" })
 
     }
 
@@ -100,7 +101,7 @@ export async function atualizarFotoPerfilCliente (req: Request, res: Response) {
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar cliente" })
+        return res.status(500).json({ error: "Erro a atualizar cliente" })
     }
 }
 
@@ -143,9 +144,9 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
                 endereco
             }
         })
-        return res.status(201).json("Cliente atualizado com sucesso ")
+        return res.status(200).json("Cliente atualizado com sucesso ")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar cliente" })
+        return res.status(400).json({ error: "Erro a atualizar cliente" })
     }
 };
 
@@ -177,9 +178,9 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
                 senha: senhaCriptografada
             }
         })
-        return res.status(201).json("Cliente atualizado com sucesso ")
+        return res.status(200).json("Cliente atualizado com sucesso ")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar cliente" })
+        return res.status(400).json({ error: "Erro a atualizar cliente" })
     }
 };
 //Listando todos os clientes
@@ -207,7 +208,7 @@ export async function listarClientes(req: Request, res: Response) {
         })
         return res.status(200).json(clientes)
     } catch (error) {
-        return res.status(404).json({ error: "Erro ao listar clientes" })
+        return res.status(500).json({ error: "Erro ao listar clientes" })
     }
 };
 
@@ -227,6 +228,8 @@ export async function deletarCliente(req: Request, res: Response) {
         })
         return res.status(200).json("Cliente deletado com sucesso")
     } catch (error) {
-        return res.status(404).json({ error: "Erro ao deletar cliente" })
+        return res.status(500).json({ error: "Erro ao deletar cliente" })
     }
 };
+
+  //Mudanças: Danrlei criar na função a parte do codigo que verfica se o usuario ja exite no banco atraves de seu email

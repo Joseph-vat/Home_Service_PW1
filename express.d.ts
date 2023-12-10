@@ -18,3 +18,5 @@ declare namespace Express{
       autenticado: string;
     }
   }
+
+  //Mudanças: Danrlei criar um type Cliente e fazer essa parte declare namespace para exportar o tipo cliente
