@@ -20,6 +20,22 @@ export async function retornaUsuarioExistente(req: Request, res: Response, next:
     }
 }
 
+//Funcão Middleware que checara se existe o usuario requerido no banco de dados
+export async function retornaClienteExistente(req: Request, res: Response, next: NextFunction) {
+    const email = String(req.headers.email);
+    const clienteEncontrado = await prismaClient.usuario.findUnique({
+        where: {
+            email: email
+        }
+    })
+    if (clienteEncontrado !== null) {
+        req.userExpr = clienteEncontrado
+        next();
+    } else {
+        res.status(500).json({ error: "Usuario não existe." });
+    }
+}
+
 //Funcão Middleware que autentica o token
 export async function autenticaToken(req: Request, res: Response, next: NextFunction) {
     const autenticaHeader = req.headers.authorization
@@ -41,6 +57,3 @@ export async function autenticaToken(req: Request, res: Response, next: NextFunc
     next();
 
 }
-
-
-  //Mudanças: Danrlei criar middleware para cliente pq meu middleware esta salvando no .d.ts o tipo prestador

@@ -1,4 +1,4 @@
-import { retornaUsuarioExistente} from "../../middlewares"; 
+import { retornaClienteExistente } from "../../middlewares";
 import { autenticaToken } from "../../middlewares"; 
 import express from 'express';
 import { atualizarFotoPerfilCliente, atualizarSegurancaCliente, atulizarPerfilCliente, criarCliente, deletarCliente, listarClientes } from "../../controller/clienteController/clienteController";
@@ -15,18 +15,18 @@ clienteRoutes.post('/cliente', criarCliente)
 clienteRoutes.post('/login', fazerLogin)
 
 //Criar foto para perfil do cliente
-clienteRoutes.put('/clienteFoto', retornaUsuarioExistente, autenticaToken, upload('uploads/cliente'), atualizarFotoPerfilCliente)
+clienteRoutes.put('/clienteFoto', retornaClienteExistente, autenticaToken, upload('uploads/cliente'), atualizarFotoPerfilCliente)
 
 // Atualizando perfil do cliente
-clienteRoutes.put('/cliente', retornaUsuarioExistente, autenticaToken, atulizarPerfilCliente)
+clienteRoutes.put('/cliente', retornaClienteExistente, autenticaToken, atulizarPerfilCliente)
 
 // Atualizando dados de segurança do cliente (email e senha)
-clienteRoutes.put('/cliente/dadosSeguranca', retornaUsuarioExistente, autenticaToken, atualizarSegurancaCliente)
+clienteRoutes.put('/cliente/dadosSeguranca', retornaClienteExistente, autenticaToken, atualizarSegurancaCliente)
 
 // Listando todos os clientes
 clienteRoutes.get('/cliente', listarClientes)
 
 // Deletando cliente
-clienteRoutes.delete('/cliente', retornaUsuarioExistente, autenticaToken, deletarCliente)
+clienteRoutes.delete('/cliente', retornaClienteExistente, autenticaToken, deletarCliente)
 
 export { clienteRoutes }

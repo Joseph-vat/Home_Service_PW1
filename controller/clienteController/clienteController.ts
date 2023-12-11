@@ -11,6 +11,17 @@ app.use(express.json())
 export async function criarCliente(req: Request, res: Response) {
     const { nome, email, senha, telefone, cpf, endereco } = req.body
 
+    // Verificar se o cliente já está cadastrado
+    const usuarioCadastro = await prismaClient.usuario.findUnique({
+        where: {
+            email: email,
+        }
+    });
+
+    if (usuarioCadastro !== null) {
+        return res.status(409).json({ error: "Usuário já existe" });
+    }
+
     // Validando os dados do cliente
     const validacaoResult = await validaClienteCriacao({
         nome,
@@ -101,7 +112,7 @@ export async function atualizarFotoPerfilCliente (req: Request, res: Response) {
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(500).json({ error: "Erro a atualizar cliente" })
+        return res.status(500).json({ error: "Erro ao atualizar cliente" })
     }
 }
 
@@ -146,7 +157,7 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
         })
         return res.status(200).json("Cliente atualizado com sucesso ")
     } catch (error) {
-        return res.status(400).json({ error: "Erro a atualizar cliente" })
+        return res.status(400).json({ error: "Erro ao atualizar cliente" })
     }
 };
 
@@ -180,7 +191,7 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
         })
         return res.status(200).json("Cliente atualizado com sucesso ")
     } catch (error) {
-        return res.status(400).json({ error: "Erro a atualizar cliente" })
+        return res.status(400).json({ error: "Erro ao atualizar cliente" })
     }
 };
 //Listando todos os clientes
@@ -231,5 +242,3 @@ export async function deletarCliente(req: Request, res: Response) {
         return res.status(500).json({ error: "Erro ao deletar cliente" })
     }
 };
-
-  //Mudanças: Danrlei criar na função a parte do codigo que verfica se o usuario ja exite no banco atraves de seu email
