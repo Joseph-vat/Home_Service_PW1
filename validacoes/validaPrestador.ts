@@ -50,7 +50,7 @@ export function validaPrestadorCriacao(prestador: usuarioPrestador) {
 }
 
 ////Validando dados do prestador na hora da sua atualização
-export function validaPrestadorAtulizacao(prestador: usuarioPrestadorAtualizacao) {
+export function validaPrestadorAtualizacao(prestador: usuarioPrestadorAtualizacao) {
   const schema = z.object({
     nome: z.string({ required_error: 'Nome é obrigatório' }).trim()
       .min(3, 'O nome deve ter no mínimo 3 caracteres'),
@@ -62,8 +62,7 @@ export function validaPrestadorAtulizacao(prestador: usuarioPrestadorAtualizacao
     horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' })
       .refine((value) => validaHorarioDisponibilidade(value), {
         message: 'Horário de disponibilidade incorreto: digite no padrão "8h às 18h".',
-      }),
-    foto: z.string({ required_error: 'Campo foto é obrigatório' }),
+      })
   })
 
   const result = schema.safeParse(prestador);

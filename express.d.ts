@@ -24,7 +24,7 @@ declare namespace Express{
 
 declare namespace Express{
     export interface Request{
-      userExpr: Cliente;
+      userExprCliente: Cliente;
     }
   }
 

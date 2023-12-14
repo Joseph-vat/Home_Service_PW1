@@ -24,7 +24,6 @@ export interface usuarioPrestador {
 export interface usuarioPrestadorAtualizacao {
     nome: string;
     telefone: string;
-    foto: string;
     cnpj: string;
     horarioDisponibilidade: string;
 }
@@ -46,7 +45,6 @@ export interface usuarioCliente {
 export interface usuarioClienteAtualizacao {
     nome: string;
     telefone: string;
-    foto: string;
     cpf: string;
     endereco: string;
 }

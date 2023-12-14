@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaPrestadorAtulizacao, validaPrestadorCriacao, validaPrestadorSeguranca } from "../../validacoes/validaPrestador";
+import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorSeguranca } from "../../validacoes/validaPrestador";
 
 
 
@@ -39,10 +39,19 @@ export async function criarPrestador(req: Request, res: Response) {
 
     if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
+
     }
 
     // Criando o prestador se a validação passar
     try {
+        const prestadorCadastro= await prismaClient.prestadorServico.findUnique({
+            where: {
+                cnpj:cnpj
+            }
+        })
+        if (prestadorCadastro !== null) {
+            return res.status(409).json({ error: "Já existe prestador cadastrado para esse CNPJ" });
+        }
         const senhaCriptografada = await hash(senha, 5)
         const novoUsuario = await prismaClient.usuario.create({
             data: {
@@ -82,10 +91,13 @@ export async function fazerLogin(req: Request, res: Response) {
         },
     })
     try {
-        if (retornaUsuarioPrestador !== null) {
+        if (retornaUsuarioPrestador === null) {
+            return res.status(404).json({ error: "Prestador não existe." });
+        } else {
             const compararSenhas = await compare(senha, retornaUsuarioPrestador.senha)
             if (!compararSenhas) {
-                return { message: "senha invalida!" }
+            return res.status(404).json({ error: "Senha incorreta!." });
+
             }
             const prestadorId = retornaUsuarioPrestador.id
 
@@ -98,7 +110,7 @@ export async function fazerLogin(req: Request, res: Response) {
             return res.status(200).json(token)
         }
     } catch (error) {
-        return res.status(400).json({ error: "Erro ao fazer login do prestador" })
+        return res.status(500).json({ error: "Erro ao fazer login do prestador" })
     }
 
 };
@@ -128,13 +140,12 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+    const { nome, telefone, cnpj, horarioDisponibilidade } = req.body
 
     // Validando os dados do prestador
-    const validacaoResult = await validaPrestadorAtulizacao({
+    const validacaoResult = await validaPrestadorAtualizacao({
         nome,
         telefone,
-        foto,
         cnpj,
         horarioDisponibilidade,
     });
@@ -151,8 +162,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
             },
             data: {
                 nome,
-                telefone,
-                foto
+                telefone
             }
         })
         const atualizaPrestador = await prismaClient.prestadorServico.update({

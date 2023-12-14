@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import {validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
+import { validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao } from '../../validacoes/validaCliente'
 
 const app = express();
 app.use(express.json())
@@ -73,10 +73,12 @@ export async function fazerLogin(req: Request, res: Response) {
         }
     })
     try {
-        if (retornaUsuarioCliente !== null) {
+        if (retornaUsuarioCliente === null) {
+            return res.status(404).json({ error: "Cliente não existe." });
+        } else {
             const compararSenhas = await compare(senha, retornaUsuarioCliente.senha)
             if (!compararSenhas) {
-                return { message: "senha invalida!" }
+                return res.status(404).json({ error: "Senha incorreta!." });
             }
             const clienteId = retornaUsuarioCliente.id
 
@@ -96,7 +98,7 @@ export async function fazerLogin(req: Request, res: Response) {
 };
 
 //criar foto do perfil 
-export async function atualizarFotoPerfilCliente (req: Request, res: Response) {
+export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
 
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
@@ -119,13 +121,12 @@ export async function atualizarFotoPerfilCliente (req: Request, res: Response) {
 // Atualizando perfil do cliente
 export async function atulizarPerfilCliente(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, foto, cpf, endereco } = req.body
+    const { nome, telefone, cpf, endereco } = req.body
 
     // Validando os dados do cliente
     const validacaoResult = await validaClienteAtualizacao({
         nome,
         telefone,
-        foto,
         cpf,
         endereco
     });
@@ -142,8 +143,7 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
             },
             data: {
                 nome,
-                telefone,
-                foto
+                telefone
             }
         })
         const atualizaCliente = await prismaClient.cliente.update({
@@ -200,7 +200,7 @@ export async function listarClientes(req: Request, res: Response) {
         const clientes = await prismaClient.usuario.findMany({
             where: {
                 prestador: {
-                    is: null 
+                    is: null
                 }
             },
             select: {

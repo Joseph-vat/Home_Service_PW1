@@ -4,8 +4,8 @@ import { verify } from 'jsonwebtoken';
 import { payload } from "./interfaces";
 
 
-//Funcão Middleware que checara se existe o usuario requerido no banco de dados
-export async function retornaUsuarioExistente(req: Request, res: Response, next: NextFunction) {
+//Funcão Middleware que checara se usuario do tipo prestador requerido existe no banco de dados
+export async function retornaPrestadorExistente(req: Request, res: Response, next: NextFunction) {
     const email = String(req.headers.email);
     const prestadorEncontrado = await prismaClient.usuario.findUnique({
         where: {
@@ -16,11 +16,11 @@ export async function retornaUsuarioExistente(req: Request, res: Response, next:
         req.userExpr = prestadorEncontrado
         next();
     } else {
-        res.status(500).json({ error: "Usuario não existe." });
+        res.status(404).json({ error: "Usuário não existe." });
     }
 }
 
-//Funcão Middleware que checara se existe o usuario requerido no banco de dados
+//Funcão Middleware que checara se existe o usuario do tipo cliente requerido no banco de dados
 export async function retornaClienteExistente(req: Request, res: Response, next: NextFunction) {
     const email = String(req.headers.email);
     const clienteEncontrado = await prismaClient.usuario.findUnique({
@@ -29,10 +29,10 @@ export async function retornaClienteExistente(req: Request, res: Response, next:
         }
     })
     if (clienteEncontrado !== null) {
-        req.userExpr = clienteEncontrado
+        req.userExprCliente = clienteEncontrado
         next();
     } else {
-        res.status(500).json({ error: "Usuario não existe." });
+        res.status(404).json({ error: "Usuario não existe." });
     }
 }
 
@@ -52,7 +52,7 @@ export async function autenticaToken(req: Request, res: Response, next: NextFunc
 
 
     } catch (error) {
-        res.status(400).json("Token Inválido!")
+        res.status(401).json("Token Inválido!")
     }
     next();
 
