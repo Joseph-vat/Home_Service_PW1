@@ -1,27 +1,39 @@
-import { prismaClient } from "../../database/prismaClient";
 import express, { Request, Response, NextFunction } from 'express';
 import { validaAnuncio } from "../../validacoes/validaAnuncio";
+import { prismaClient } from '../../database/prismaClient';
 
 
 // cria anuncio associado a um prestador 
 export async function criarAnuncio(req: Request, res: Response) {
-    const { titulo, descricao, latitude, longitude, preco} = req.body;
-    const servico= <string>req.body.servico.toLowerCase();       
+    const { titulo, descricao, latitude, longitude, preco } = req.body;
+    const servico = <string>req.body.servico.toLowerCase();
     const id = req.autenticado;
 
-     // Validando os dados do anúncio
-     const validacaoResult = await validaAnuncio({
+    // Validando os dados do anúncio
+    const validacaoResult = await validaAnuncio({
         titulo,
         descricao,
         preco,
         servico,
         latitude,
         longitude
-      });
-    
-      if (validacaoResult !== null) {
+    });
+
+    if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
-      }
+    }
+
+    // Verifica se já existe anúncio com o mesmo titulo para o mesmo prestador
+    const anuncioExiste = await prismaClient.anuncio.findFirst({
+        where: {
+            titulo,
+            prestadorId: id
+        }
+    });
+
+    if (anuncioExiste) {
+        return res.status(400).json({ Error: 'Não foi possível criar anúncio! Título duplicado para o mesmo prestador.' });
+    }
 
     try {
         const novoAnunicio = await prismaClient.anuncio.create({
@@ -30,11 +42,11 @@ export async function criarAnuncio(req: Request, res: Response) {
                 descricao,
                 preco,
                 servico,
-                latitude: parseFloat(latitude), 
+                latitude: parseFloat(latitude),
                 longitude: parseFloat(longitude),
                 prestador: {
                     connect: {
-                       usuarioIdPrestador : id
+                        usuarioIdPrestador: id
                     }
                 }
             }
@@ -78,20 +90,20 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
 export async function editaAnuncio(req: Request, res: Response) {
     const { titulo, descricao, preco, servico, latitude, longitude } = req.body
     const id = req.params.id;
-    
-     // Validando os dados do anúncio
-     const validacaoResult = await validaAnuncio({
+
+    // Validando os dados do anúncio
+    const validacaoResult = await validaAnuncio({
         titulo,
         descricao,
         preco,
         servico,
         latitude,
         longitude
-      });
-    
-      if (validacaoResult !== null) {
+    });
+
+    if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
-      }
+    }
     try {
         const anuncioEditado = await prismaClient.anuncio.update({
             where: {
@@ -100,8 +112,8 @@ export async function editaAnuncio(req: Request, res: Response) {
             data: {
                 titulo,
                 descricao,
-                latitude: parseFloat(latitude), 
-                longitude: parseFloat(longitude),   
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
                 preco,
                 servico
             }
@@ -115,12 +127,12 @@ export async function editaAnuncio(req: Request, res: Response) {
 
 // deleta um anuncio
 export async function deletaAnuncio(req: Request, res: Response) {
-    const id = req.params.id 
+    const id = req.params.id
 
     try {
         const anuncioDeletado = await prismaClient.anuncio.delete({
             where: {
-                id:id 
+                id: id
             }
         });
         res.status(200).json(anuncioDeletado);
