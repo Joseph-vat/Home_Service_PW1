@@ -1,4 +1,4 @@
-import { prismaClient } from "../../prismaClient";
+import { prismaClient } from "../../database/prismaClient";
 import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";

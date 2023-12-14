@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { usuarioCliente, usuarioClienteAtualizacao, usuarioClienteAtualizacaoDadosSensiveis} from '../interfaces';
+import { usuarioCliente, usuarioClienteAtualizacao, usuarioClienteAtualizacaoDadosSensiveis} from '../interfaces/interfaces';
 import { type } from 'os';
 
 const validaTelefone = (telefone: string): boolean => {

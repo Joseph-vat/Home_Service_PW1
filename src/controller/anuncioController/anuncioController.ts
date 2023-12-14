@@ -1,4 +1,4 @@
-import { prismaClient } from "../../prismaClient";
+import { prismaClient } from "../../database/prismaClient";
 import express, { Request, Response, NextFunction } from 'express';
 import { validaAnuncio } from "../../validacoes/validaAnuncio";
 

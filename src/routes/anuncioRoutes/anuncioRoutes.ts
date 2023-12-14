@@ -1,9 +1,8 @@
-// import { retornaPrestadorExistente } from "./middlewares";
-import { retornaPrestadorExistente } from "../../middlewares";
-import { autenticaToken } from "../../middlewares"; 
 import { criarAnuncio, deletaAnuncio, editaAnuncio, listaAnuncioPrestador, listaTodosAnuncios } from "../../controller/anuncioController/anuncioController";
 import express from 'express';
 import { upload } from "../../config/multerConfig";
+import { retornaPrestadorExistente } from "../../middlewares/verificaPrestador";
+import { autenticaToken } from "../../middlewares/autenticacaoToken";
 
 
 const anuncioRoutes = express();

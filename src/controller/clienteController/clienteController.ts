@@ -1,9 +1,9 @@
-import { prismaClient } from "../../prismaClient";
 import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
 import { validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao } from '../../validacoes/validaCliente'
+import { prismaClient } from '../../database/prismaClient';
 
 const app = express();
 app.use(express.json())

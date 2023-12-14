@@ -1,9 +1,9 @@
-import { retornaClienteExistente } from "../../middlewares";
-import { autenticaToken } from "../../middlewares"; 
 import express from 'express';
 import { atualizarFotoPerfilCliente, atualizarSegurancaCliente, atulizarPerfilCliente, criarCliente, deletarCliente, listarClientes } from "../../controller/clienteController/clienteController";
 import { upload } from "../../config/multerConfig";
 import { fazerLogin } from "../../controller/clienteController/clienteController";
+import { retornaClienteExistente } from '../../middlewares/verficaCliente';
+import { autenticaToken } from '../../middlewares/autenticacaoToken';
 
 const clienteRoutes = express();
 clienteRoutes.use(express.json())

@@ -1,8 +1,8 @@
-import { retornaPrestadorExistente} from "../../middlewares"; 
-import { autenticaToken } from "../../middlewares"; 
 import express from 'express';
 import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atualizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador, atualizarFotoPerfilPrestador,  } from "../../controller/prestadorController/prestadorController";
 import { upload } from "../../config/multerConfig";
+import { retornaPrestadorExistente } from '../../middlewares/verificaPrestador';
+import { autenticaToken } from '../../middlewares/autenticacaoToken';
 
 const prestadorRoutes = express();
 prestadorRoutes.use(express.json())

@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { usuarioPrestador, usuarioPrestadorAtualizacao, usuarioPrestadorAtualizaDadosSensiveis } from '../interfaces';
+import { usuarioPrestador, usuarioPrestadorAtualizacao, usuarioPrestadorAtualizaDadosSensiveis } from '../interfaces/interfaces';
 import { type } from 'os';
 
 function validaCnpj(cnpj: string): boolean {
