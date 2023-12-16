@@ -75,7 +75,7 @@ export async function criarPrestador(req: Request, res: Response) {
                 }
             }
         });
-        res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+        res.status(201).json({ message: "Prestador de serviço criado com sucesso" });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
