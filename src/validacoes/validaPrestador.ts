@@ -78,9 +78,9 @@ export function validaPrestadorAtualizacao(prestador: usuarioPrestadorAtualizaca
 export function validaPrestadorSeguranca(prestador: usuarioPrestadorAtualizaDadosSensiveis) {
   const schema = z.object({
     email: z.string({ required_error: 'Email é obrigatório' }).trim()
-    .email('E-mail inválido'),
-  senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
-    .min(6, 'A senha deve ter pelo menos 6 caracteres')
+      .email('E-mail inválido'),
+    senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
+      .min(6, 'A senha deve ter pelo menos 6 caracteres')
   })
 
   const result = schema.safeParse(prestador);

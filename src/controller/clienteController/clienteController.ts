@@ -19,7 +19,7 @@ export async function criarCliente(req: Request, res: Response) {
     });
 
     if (usuarioCadastro !== null) {
-        return res.status(409).json({ error: "Usuário já existe" });
+        return res.status(409).json({ error: `Usuário ${nome} já existe` });
     }
 
     // Validando os dados do cliente
@@ -58,7 +58,7 @@ export async function criarCliente(req: Request, res: Response) {
                 }
             }
         });
-        res.status(201).json({ message: 'Cliente criado com sucesso' });
+        res.status(201).json({ message: `Cliente ${nome} criado com sucesso!` });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar cliente' });
     }
@@ -78,7 +78,7 @@ export async function fazerLogin(req: Request, res: Response) {
         } else {
             const compararSenhas = await compare(senha, retornaUsuarioCliente.senha)
             if (!compararSenhas) {
-                return res.status(404).json({ error: "Senha incorreta!." });
+                return res.status(401).json({ error: "Senha incorreta!." });
             }
             const clienteId = retornaUsuarioCliente.id
 
@@ -155,7 +155,7 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
                 endereco
             }
         })
-        return res.status(200).json("Cliente atualizado com sucesso ")
+        return res.status(200).json(`Cliente ${nome} atualizado com sucesso!`)
     } catch (error) {
         return res.status(400).json({ error: "Erro ao atualizar cliente" })
     }
@@ -180,6 +180,11 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
 
     const senhaCriptografada = await hash(senha, 5)
     try {
+        const cliente = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -189,7 +194,7 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
                 senha: senhaCriptografada
             }
         })
-        return res.status(200).json("Cliente atualizado com sucesso ")
+        return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
     } catch (error) {
         return res.status(400).json({ error: "Erro ao atualizar cliente" })
     }
@@ -227,6 +232,11 @@ export async function listarClientes(req: Request, res: Response) {
 export async function deletarCliente(req: Request, res: Response) {
     const id = req.autenticado
     try {
+        const cliente = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
         const deletaCliente = await prismaClient.cliente.delete({
             where: {
                 usuarioIdCliente: id
@@ -237,7 +247,7 @@ export async function deletarCliente(req: Request, res: Response) {
                 id: id
             }
         })
-        return res.status(200).json("Cliente deletado com sucesso")
+        return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
     } catch (error) {
         return res.status(500).json({ error: "Erro ao deletar cliente" })
     }

@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { validaAnuncio } from "../../validacoes/validaAnuncio";
 import { prismaClient } from '../../database/prismaClient';
+import { title } from 'node:process';
 
 
 // cria anuncio associado a um prestador 
@@ -51,7 +52,7 @@ export async function criarAnuncio(req: Request, res: Response) {
                 }
             }
         })
-        res.status(200).json(novoAnunicio);
+        res.status(201).json(`Anuncio ${titulo} criado com sucesso!`);
     }
     catch (Error) {
         res.status(400).json({ Error: "Não foi possível salvar anúncio!" })
@@ -118,10 +119,10 @@ export async function editaAnuncio(req: Request, res: Response) {
                 servico
             }
         });
-        res.status(200).json(anuncioEditado);
+        res.status(200).json(`Anúncio ${titulo} editado com sucesso!`);
     }
     catch (Error) {
-        res.status(400).json({ Error: "Não foi possível encontrar anúncio!" })
+        res.status(400).json({ Error: "Não foi possível atualizar anúncio!" })
     }
 };
 
@@ -130,12 +131,17 @@ export async function deletaAnuncio(req: Request, res: Response) {
     const id = req.params.id
 
     try {
+        const anuncio = await prismaClient.anuncio.findUnique({
+            where: {
+                id
+            }
+        });
         const anuncioDeletado = await prismaClient.anuncio.delete({
             where: {
                 id: id
             }
         });
-        res.status(200).json(anuncioDeletado);
+        res.status(200).json(`Anúncio ${anuncio?.titulo} deletado com sucesso!`);
     }
     catch (Error) {
         res.status(400).json({ Error: "Não foi possível deletar anúncio!" })
