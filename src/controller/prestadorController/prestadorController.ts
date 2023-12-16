@@ -24,7 +24,7 @@ export async function criarPrestador(req: Request, res: Response) {
     });
 
     if (usuarioCadastro !== null) {
-        return res.status(409).json({ error: "Usuário já existe" });
+        return res.status(409).json({ error: `Usuário ${nome} já existe` });
     }
 
     // Validando os dados do prestador
@@ -44,9 +44,9 @@ export async function criarPrestador(req: Request, res: Response) {
 
     // Criando o prestador se a validação passar
     try {
-        const prestadorCadastro= await prismaClient.prestadorServico.findUnique({
+        const prestadorCadastro = await prismaClient.prestadorServico.findUnique({
             where: {
-                cnpj:cnpj
+                cnpj: cnpj
             }
         })
         if (prestadorCadastro !== null) {
@@ -75,7 +75,7 @@ export async function criarPrestador(req: Request, res: Response) {
                 }
             }
         });
-        res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+        res.status(201).json({ message: `Prestador de serviço ${nome} criado com sucesso` });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
@@ -96,7 +96,7 @@ export async function fazerLogin(req: Request, res: Response) {
         } else {
             const compararSenhas = await compare(senha, retornaUsuarioPrestador.senha)
             if (!compararSenhas) {
-            return res.status(404).json({ error: "Senha incorreta!." });
+                return res.status(401).json({ error: "Senha incorreta!." });
 
             }
             const prestadorId = retornaUsuarioPrestador.id
@@ -174,7 +174,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
                 horarioDisponibilidade
             }
         })
-        return res.status(200).json("Prestador atualizado com sucesso ")
+        return res.status(200).json(`Prestador ${nome} atualizado com sucesso`)
     } catch (error) {
         return res.status(400).json({ error: "Erro a atualizar prestador" })
     }
@@ -200,6 +200,12 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
 
     const senhaCriptografada = await hash(senha, 5)
     try {
+        const prestador = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
+
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -209,7 +215,7 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
                 senha: senhaCriptografada
             }
         })
-        return res.status(200).json("Prestador atualizado com sucesso ")
+        return res.status(200).json(`Prestador ${prestador?.nome} atualizado com sucesso`)
     } catch (error) {
         return res.status(400).json({ error: "Erro a atualizar prestador" })
     }
@@ -303,6 +309,11 @@ export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado
 
     try {
+        const prestador = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
         // Deletando todos os anúncios do usuário Prestador antes de deletar o prestador
         await prismaClient.anuncio.deleteMany({
             where: {
@@ -326,7 +337,7 @@ export async function deletarPrestador(req: Request, res: Response) {
                     },
                 });
 
-                return res.status(200).json({ message: 'Prestador deletado com sucesso!' });
+                return res.status(200).json({ message: `Prestador ${prestador?.nome} deletado com sucesso!` });
             } catch (error) {
                 // Caso haja falha ao deletar o usuário após excluir o prestador
                 return res.status(500).json({ error: 'Erro ao deletar o usuário', details: error });
