@@ -1,4 +1,4 @@
-# HomeService: Uma aplicação que auxilia a localização de vagas de estacionamento
+# HomeService: Um aplicativo de divulgação de anúncios de atividades domésticas 
 ## Projeto para disciplina de Programação para Web 2023.2
 
 Grupo:
@@ -22,9 +22,10 @@ Neste projeto nós desenvolvemos uma plataforma de divulgação de serviços dom
 4. Crie um arquivo `.env` na raiz do seu projeto e configure as variáveis de ambiente necessárias.
  Exemplo:
 ```
-DATABASE_URL = yourDatabaseUrl
+CHAVE_SECRETA= "lkdfhn65h4ge65r4h5d5fr"
+DATABASE_URL = "yourDatabaseUrl"
 ```
-5. Faça as migrations com o comando 'npx prisma migrate dev --name <nome-da-migration>' para gerar um arquivo na pasta prisma/migrations com o nome que você escolheu, nesse arquivo, você vai encontrar um script SQL que representa as alterações que você fez no arquivo prisma/schema.prisma.
+5. Faça as migrations com o comando 'npx prisma migrate dev' para gerar um arquivo na pasta prisma/migrations, nesse arquivo, você vai encontrar um script SQL que representa as alterações que você fez no arquivo prisma/schema.prisma.
 
 6. Agora, inicie o servidor com o comando `npm start`.
 
@@ -38,20 +39,20 @@ URL	| Método | Descrição
 /prestador |	POST |	Recurso de criação de usuário prestador de serviços, espera um json no corpo da requisição
 /prestador	| GET |	Recurso de exibição de dados dos usuários prestadores de serviços.
 /prestadorservico	| GET |	Recurso de exibição de dados de prestadores de serviços por serviço prestado, espera um json no corpo da requisição
-/prestador	| PUT	| Recurso de atualização do perfil usuário prestador de serviços, espera um json no corpo da requisição e recebe o id do usuário como parâmetro.
-/prestador/dadosSeguranca	| PUT	| Recurso de atualização de dados sensíveis do usuário prestador de serviços, espera um json no corpo da requisição e recebe o id do usuário como parâmetro.
-/prestadorFoto	| PUT	| Recurso de atualização da foto de perfil do usuário prestador de serviços, espera um multpart/form no corpo da requisição e recebe o id do usuário como parâmetro.
-/prestador	| DELETE |	Recurso de exclusão de usuários prestadores de serviços, recebe um id como parâmetro
+/prestador	| PUT	| Recurso de atualização do perfil usuário prestador de serviços, espera um json no corpo da requisição com os dados a serem atualizados e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/prestador/dadosSeguranca	| PUT	| Recurso de atualização de dados sensíveis do usuário prestador de serviços, espera um json no corpo da requisição com os dados a serem atualizados e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/prestadorFoto	| PUT	| Recurso de atualização da foto de perfil do usuário prestador de serviços, espera um multpart/form no corpo da requisição e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/prestador	| DELETE |	Recurso de exclusão de usuários prestadores de serviços, espera o e-mail do usuário no cabeçalho da requisição para autenticação.
 
 Usuário Cliente
 URL	| Método | Descrição
 ------|------------|-----
 /cliente |	POST |	Recurso de criação de usuário cliente, espera um json no corpo da requisição
 /cliente	| GET |	Recurso de exibição de dados dos usuários cliente.
-/cliente	| PUT	| Recurso de atualização do perfil usuário cliente, espera um json no corpo da requisição e recebe o id do usuário como parâmetro.
-/cliente/dadosSeguranca	| PUT	| Recurso de atualização de dados sensíveis do usuário cliente, espera um json no corpo da requisição e recebe o id do usuário como parâmetro.
-/clienteFoto	| PUT	| Recurso de atualização da foto de perfil do usuário cliente, espera um multpart/form no corpo da requisição e recebe o id do usuário como parâmetro.
-/cliente	| DELETE |	Recurso de exclusão de usuários prestadores de serviços, recebe um id como parâmetro
+/cliente	| PUT	| Recurso de atualização do perfil usuário cliente, espera um json no corpo da requisição e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/cliente/dadosSeguranca	| PUT	| Recurso de atualização de dados sensíveis do usuário cliente, espera um json no corpo da requisição e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/clienteFoto	| PUT	| Recurso de atualização da foto de perfil do usuário cliente, espera um multpart/form no corpo da requisição e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/cliente	| DELETE |	Recurso de exclusão de usuários prestadores de serviços, espera o e-mail do usuário no cabeçalho da requisição para autenticação.
 
 Autenticação
 URL	| Método | Descrição
@@ -61,8 +62,8 @@ URL	| Método | Descrição
 Anúncio
 URL	| Método | Descrição
 ------|------------|-----
-/anuncio |	POST |	Recurso de criação de anuncio, espera um json no corpo da requisição.
+/anuncio |	POST |	Recurso de criação de anuncio, espera um json no corpo da requisição e o e-mail do usuário no cabeçalho da requisição para autenticação.
 /anuncios	| GET |	Recurso de exibição de dados de todos os anuncios cadastrados.
-/anunciosPrestador	| GET |	Recurso de exibição de anuncios de um prestador, recebe o id de usuario como parametro.
-/anuncios/:id |	PUT	| Recurso de atualização das informações do anúncio, espera um json no corpo da requisição e recebe o id do anúncio como parâmetro.
-/anuncio/:id	| DELETE |	Recurso de exclusão de anúncio que recebe um id como parâmetro.
+/anunciosPrestador	| GET |	Recurso de exibição de anuncios de um prestador, espera o e-mail do usuário no cabeçalho da requisição para autenticação.
+/anuncios/:id |	PUT	| Recurso de atualização das informações do anúncio, espera um json no corpo da requisição, recebe como parâmetro o id do anúncio a ser atualizado e o e-mail do usuário no cabeçalho da requisição para autenticação.
+/anuncio/:id	| DELETE |	Recurso de exclusão de anúncio, recebe como parâmetro o id do anúncio a ser deletado e o e-mail do usuário no cabeçalho da requisição para autenticação.
