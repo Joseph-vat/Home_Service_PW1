@@ -22,7 +22,7 @@ Neste projeto nós desenvolvemos uma plataforma de divulgação de serviços dom
 4. Crie um arquivo `.env` na raiz do seu projeto e configure as variáveis de ambiente necessárias.
  Exemplo:
 ```
-CHAVE_SECRETA= "lkdfhn65h4ge65r4h5d5fr"
+CHAVE_SECRETA= "suaChaveSecreta"
 DATABASE_URL = "yourDatabaseUrl"
 ```
 5. Faça as migrations com o comando 'npx prisma migrate dev' para gerar um arquivo na pasta prisma/migrations, nesse arquivo, você vai encontrar um script SQL que representa as alterações que você fez no arquivo prisma/schema.prisma.
