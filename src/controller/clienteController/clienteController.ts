@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao } from '../../validacoes/validaCliente'
+import { validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao, validaClienteLogin } from '../../validacoes/validaCliente'
 import { prismaClient } from '../../database/prismaClient';
 
 const app = express();
@@ -38,6 +38,14 @@ export async function criarCliente(req: Request, res: Response) {
 
     // Criando o cliente se a validação passar
     try {
+        const clienteCadastro = await prismaClient.cliente.findUnique({
+            where: {
+                cpf:cpf
+            }
+        })
+        if (clienteCadastro !== null) {
+            return res.status(409).json({ error: "Já existe cliente cadastrado para esse CPF" });
+        }
         const senhaCriptografada = await hash(senha, 5)
         const novoUsuario = await prismaClient.usuario.create({
             data: {
@@ -67,6 +75,17 @@ export async function criarCliente(req: Request, res: Response) {
 //Cria token para determinado usuario (Fazer login)
 export async function fazerLogin(req: Request, res: Response) {
     const { email, senha } = req.body
+
+    // Validando os dados do prestador
+    const validacaoResult = await validaClienteLogin({
+        email,
+        senha
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
     const retornaUsuarioCliente = await prismaClient.usuario.findUnique({
         where: {
             email: email
@@ -78,7 +97,7 @@ export async function fazerLogin(req: Request, res: Response) {
         } else {
             const compararSenhas = await compare(senha, retornaUsuarioCliente.senha)
             if (!compararSenhas) {
-                return res.status(401).json({ error: "Senha incorreta!." });
+                return res.status(401).json({ error: "Senha ou Email incorreto!." });
             }
             const clienteId = retornaUsuarioCliente.id
 
@@ -114,7 +133,7 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(500).json({ error: "Erro ao atualizar cliente" })
+        return res.status(500).json({ error: "Erro ao atualizar foto de cliente" })
     }
 }
 
@@ -137,6 +156,16 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
 
     // Atualizando o cliente se a validação passar
     try {
+
+        //Não permite que o novo CPF que esta sendo atualizado,seja alterado para o mesmo CPF de outro cliente já existente na plataforma
+        const clienteCadastro = await prismaClient.cliente.findUnique({
+            where: {
+                cpf: cpf
+            }
+        })
+        if (clienteCadastro?.usuarioIdCliente !== id) {
+            return res.status(409).json({ error: "Já existe outro cliente cadastrado com esse CPF! Atualize o campo CPF com um CPF válido!" });
+        }
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -180,21 +209,33 @@ export async function atualizarSegurancaCliente(req: Request, res: Response) {
 
     const senhaCriptografada = await hash(senha, 5)
     try {
-        const cliente = await prismaClient.usuario.findUnique({
+
+        //Não permite que o novo email que esta sendo atualizado,seja alterado para o mesmo email de outro usuário já existente na plataforma
+        const clienteCadastro = await prismaClient.usuario.findUnique({
             where: {
-                id
-            }
-        });
-        const atualizaUsuario = await prismaClient.usuario.update({
-            where: {
-                id: id
-            },
-            data: {
-                email,
-                senha: senhaCriptografada
+                email: email
             }
         })
-        return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
+
+        if (clienteCadastro === null) {
+            const cliente = await prismaClient.usuario.findUnique({
+                where: {
+                    id
+                }
+            });
+            const atualizaUsuario = await prismaClient.usuario.update({
+                where: {
+                    id: id
+                },
+                data: {
+                    email,
+                    senha: senhaCriptografada
+                }
+            })
+            return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
+        } else if (clienteCadastro?.id !== id) {
+            return res.status(409).json({ error: "Já existe outro usuário cadastrado com esse email na plataforma! Atualize o campo email com um email válido!" });
+        }
     } catch (error) {
         return res.status(400).json({ error: "Erro ao atualizar cliente" })
     }
@@ -247,7 +288,7 @@ export async function deletarCliente(req: Request, res: Response) {
                 id: id
             }
         })
-        return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
+        return res.status(200).json(`Cliente ${cliente?.nome} deletado com sucesso!`)
     } catch (error) {
         return res.status(500).json({ error: "Erro ao deletar cliente" })
     }

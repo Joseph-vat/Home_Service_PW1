@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { anuncio } from '../interfaces/interfaces';
+import { anuncio } from '../interfaces/interfaceAnuncio';
 
 
 function validaPreco(preco: string): boolean {

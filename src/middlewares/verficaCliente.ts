@@ -15,6 +15,6 @@ export async function retornaClienteExistente(req: Request, res: Response, next:
         req.userExprCliente = clienteEncontrado
         next();
     } else {
-        res.status(404).json({ error: "Usuario não existe." });
+        res.status(404).json({ error: "Cliente não existe." });
     }
 }

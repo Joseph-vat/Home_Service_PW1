@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorSeguranca } from "../../validacoes/validaPrestador";
+import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorSeguranca, validaPrestadorLogin } from "../../validacoes/validaPrestador";
 
 
 
@@ -85,6 +85,17 @@ export async function criarPrestador(req: Request, res: Response) {
 //Cria token para determinado usuario (Fazer login)
 export async function fazerLogin(req: Request, res: Response) {
     const { email, senha } = req.body
+
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestadorLogin({
+        email,
+        senha
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
     const retornaUsuarioPrestador = await prismaClient.usuario.findUnique({
         where: {
             email: email
@@ -96,9 +107,10 @@ export async function fazerLogin(req: Request, res: Response) {
         } else {
             const compararSenhas = await compare(senha, retornaUsuarioPrestador.senha)
             if (!compararSenhas) {
-                return res.status(401).json({ error: "Senha incorreta!." });
+                return res.status(401).json({ error: "Senha ou Email incorreto!." });
 
             }
+
             const prestadorId = retornaUsuarioPrestador.id
 
             const token = jwt.sign(
@@ -132,7 +144,7 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(500).json({ error: "Erro a atualizar foto do prestador" })
+        return res.status(400).json({ error: "Erro a atualizar foto do prestador" })
     }
 }
 
@@ -156,6 +168,15 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
 
     // Atualizando o prestador se a validação passar
     try {
+        //Não permite que o novo CNPJ que esta sendo atualizado,seja alterado para o mesmo CNPJ de outro prestador já existente na plataforma
+        const prestadorCadastro= await prismaClient.prestadorServico.findUnique({
+            where: {
+                cnpj:cnpj
+            }
+        })
+        if (prestadorCadastro?.usuarioIdPrestador !== id) {
+            return res.status(409).json({ error: "Já existe outro prestador cadastrado com esse CNPJ! Atualize o campo CNPJ com um CNPJ válido!" });
+        }
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -176,7 +197,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
         })
         return res.status(200).json(`Prestador ${nome} atualizado com sucesso`)
     } catch (error) {
-        return res.status(400).json({ error: "Erro a atualizar prestador" })
+        return res.status(500).json({ error: "Erro a atualizar prestador" })
     }
 };
 
@@ -200,6 +221,14 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
 
     const senhaCriptografada = await hash(senha, 5)
     try {
+         //Não permite que o novo email que esta sendo atualizado,seja alterado para o mesmo email de outro usuário já existente na plataforma
+         const prestadorCadastro= await prismaClient.usuario.findUnique({
+            where: {
+                email: email
+            }
+        })
+        
+       if(prestadorCadastro === null){
         const prestador = await prismaClient.usuario.findUnique({
             where: {
                 id
@@ -216,8 +245,11 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
             }
         })
         return res.status(200).json(`Prestador ${prestador?.nome} atualizado com sucesso`)
+    } else if (prestadorCadastro?.id !== id) {
+        return res.status(409).json({ error: "Já existe outro usuário cadastrado com esse email na plataforma! Atualize o campo email com um email válido!" });
+    }
     } catch (error) {
-        return res.status(400).json({ error: "Erro a atualizar prestador" })
+        return res.status(500).json({ error: "Erro a atualizar prestador" })
     }
 };
 
@@ -277,7 +309,6 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
                         email: true,
                         telefone: true,
                         foto: true,
-                        // cliente: true,  verificar depois se eu quiser ver clientes associados a prestador
                     }
                 },
             }

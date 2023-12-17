@@ -14,6 +14,6 @@ export async function retornaPrestadorExistente(req: Request, res: Response, nex
         req.userExpr = prestadorEncontrado
         next();
     } else {
-        res.status(404).json({ error: "Usuário não existe." });
+        res.status(404).json({ error: "Prestador não existe." });
     }
 }
