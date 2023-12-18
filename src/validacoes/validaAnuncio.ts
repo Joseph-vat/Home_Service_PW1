@@ -1,5 +1,5 @@
 import { z, ZodError } from 'zod';
-import { anuncio } from '../interfaces';
+import { anuncio } from '../interfaces/interfaceAnuncio';
 
 
 function validaPreco(preco: string): boolean {
@@ -11,17 +11,17 @@ function validaPreco(preco: string): boolean {
 
 export function validaAnuncio(prestador: anuncio) {
     const schema = z.object({
-        titulo: z.string({ required_error: 'Nome é obrigatório' }).trim()
-        .min(3, 'O nome deve ter no mínimo 3 caracteres'),
-        descricao: z.string({ required_error: 'Nome é obrigatório' }).trim(),
+        titulo: z.string({ required_error: 'Título é obrigatório' }).trim()
+        .min(3, 'O título deve ter no mínimo 3 caracteres'),
+        descricao: z.string({ required_error: 'Descrição é obrigatório' }).trim(),
         preco: z.string({ required_error: 'O preço não pode estar vazio' }).trim()
             .refine((value) => validaPreco(value), { message: 'O preço deve estar no formato de moeda real (R$ 10,00).' }),
-        servico: z.string({ required_error: 'Nome é obrigatório' }).trim()
-        .min(3, 'O nome deve ter no mínimo 3 caracteres'),
-        latitude: z.string({ required_error: 'Nome é obrigatório' }).trim()
-        .min(2, 'O nome deve ter no mínimo 1 caractere'),
-        longitude: z.string({ required_error: 'Nome é obrigatório' }).trim()
-        .min(2, 'O nome deve ter no mínimo 1 caractere'),
+        servico: z.string({ required_error: 'Serviço é obrigatório' }).trim()
+        .min(3, 'O serviço deve ter no mínimo 3 caracteres'),
+        latitude: z.string({ required_error: 'Latitude é obrigatório' }).trim()
+        .min(2, 'A latitude deve ter no mínimo 1 caractere'),
+        longitude: z.string({ required_error: 'Longitude é obrigatório' }).trim()
+        .min(2, 'A longitude deve ter no mínimo 1 caractere'),
     })
 
     const result = schema.safeParse(prestador);

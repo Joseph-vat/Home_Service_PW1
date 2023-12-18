@@ -3,15 +3,6 @@ export interface payload {
 }
 
 
-export interface anuncio {
-    titulo: string;
-    descricao: string;
-    preco: string
-    servico: string;
-    latitude: string;
-    longitude: string;  
-}
-
 export interface usuarioPrestador {
     nome: string;
     email: string;
@@ -24,7 +15,6 @@ export interface usuarioPrestador {
 export interface usuarioPrestadorAtualizacao {
     nome: string;
     telefone: string;
-    foto: string;
     cnpj: string;
     horarioDisponibilidade: string;
 }

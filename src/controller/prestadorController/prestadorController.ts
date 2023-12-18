@@ -1,9 +1,9 @@
-import { prismaClient } from "../../prismaClient";
+import { prismaClient } from "../../database/prismaClient";
 import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaPrestadorAtulizacao, validaPrestadorCriacao, validaPrestadorSeguranca } from "../../validacoes/validaPrestador";
+import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorSeguranca, validaPrestadorLogin } from "../../validacoes/validaPrestador";
 
 
 
@@ -12,9 +12,20 @@ app.use(express.json())
 
 
 
-//Criando Prestador de Serviço e validando seus dados
+// Criar prestador
 export async function criarPrestador(req: Request, res: Response) {
     const { nome, email, senha, telefone, cnpj, horarioDisponibilidade } = req.body
+
+    // Verificar se o cliente já está cadastrado
+    const usuarioCadastro = await prismaClient.usuario.findUnique({
+        where: {
+            email: email,
+        }
+    });
+
+    if (usuarioCadastro !== null) {
+        return res.status(409).json({ error: `Usuário ${nome} já existe` });
+    }
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorCriacao({
@@ -28,10 +39,19 @@ export async function criarPrestador(req: Request, res: Response) {
 
     if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
+
     }
 
     // Criando o prestador se a validação passar
     try {
+        const prestadorCadastro = await prismaClient.prestadorServico.findUnique({
+            where: {
+                cnpj: cnpj
+            }
+        })
+        if (prestadorCadastro !== null) {
+            return res.status(409).json({ error: "Já existe prestador cadastrado para esse CNPJ" });
+        }
         const senhaCriptografada = await hash(senha, 5)
         const novoUsuario = await prismaClient.usuario.create({
             data: {
@@ -55,28 +75,42 @@ export async function criarPrestador(req: Request, res: Response) {
                 }
             }
         });
-        res.status(201).json({ message: 'Prestador de serviço criado com sucesso' });
+        res.status(201).json({ message: `Prestador de serviço ${nome} criado com sucesso` });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
 };
 
 
-
 //Cria token para determinado usuario (Fazer login)
 export async function fazerLogin(req: Request, res: Response) {
     const { email, senha } = req.body
+
+    // Validando os dados do prestador
+    const validacaoResult = await validaPrestadorLogin({
+        email,
+        senha
+    });
+
+    if (validacaoResult !== null) {
+        return res.status(400).json({ error: validacaoResult });
+    }
+
     const retornaUsuarioPrestador = await prismaClient.usuario.findUnique({
         where: {
             email: email
         },
     })
     try {
-        if (retornaUsuarioPrestador !== null) {
+        if (retornaUsuarioPrestador === null) {
+            return res.status(404).json({ error: "Prestador não existe." });
+        } else {
             const compararSenhas = await compare(senha, retornaUsuarioPrestador.senha)
             if (!compararSenhas) {
-                return { message: "senha invalida!" }
+                return res.status(401).json({ error: "Senha ou Email incorreto!." });
+
             }
+
             const prestadorId = retornaUsuarioPrestador.id
 
             const token = jwt.sign(
@@ -85,18 +119,17 @@ export async function fazerLogin(req: Request, res: Response) {
                 { expiresIn: '1d', subject: prestadorId }
             );
 
-            return res.status(201).json(token)
+            return res.status(200).json(token)
         }
     } catch (error) {
-
+        return res.status(500).json({ error: "Erro ao fazer login do prestador" })
     }
 
 };
 
 
 //criar foto do perfil 
-export async function atualizarFotoPerfilPrestador (req: Request, res: Response) {
-
+export async function atualizarFotoPerfilPrestador(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
 
@@ -111,21 +144,20 @@ export async function atualizarFotoPerfilPrestador (req: Request, res: Response)
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(400).json({ error: "Erro a atualizar foto do prestador" })
     }
-};
+}
 
 
 // Atualizando perfil do prestador
-export async function atulizarPerfilPrestador(req: Request, res: Response) {
+export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, foto, cnpj, horarioDisponibilidade } = req.body
+    const { nome, telefone, cnpj, horarioDisponibilidade } = req.body
 
     // Validando os dados do prestador
-    const validacaoResult = await validaPrestadorAtulizacao({
+    const validacaoResult = await validaPrestadorAtualizacao({
         nome,
         telefone,
-        foto,
         cnpj,
         horarioDisponibilidade,
     });
@@ -136,14 +168,22 @@ export async function atulizarPerfilPrestador(req: Request, res: Response) {
 
     // Atualizando o prestador se a validação passar
     try {
+        //Não permite que o novo CNPJ que esta sendo atualizado,seja alterado para o mesmo CNPJ de outro prestador já existente na plataforma
+        const prestadorCadastro= await prismaClient.prestadorServico.findUnique({
+            where: {
+                cnpj:cnpj
+            }
+        })
+        if (prestadorCadastro?.usuarioIdPrestador !== id && prestadorCadastro?.cnpj !== undefined) {
+            return res.status(409).json({ error: "Já existe outro prestador cadastrado com esse CNPJ! Atualize o campo CNPJ com um CNPJ válido!" });
+        }
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
             },
             data: {
                 nome,
-                telefone,
-                foto
+                telefone
             }
         })
         const atualizaPrestador = await prismaClient.prestadorServico.update({
@@ -155,11 +195,12 @@ export async function atulizarPerfilPrestador(req: Request, res: Response) {
                 horarioDisponibilidade
             }
         })
-        return res.status(201).json("Prestador atualizado com sucesso ")
+        return res.status(200).json(`Prestador ${nome} atualizado com sucesso`)
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(500).json({ error: "Erro a atualizar prestador" })
     }
 };
+
 
 // Atualizando dados de segurança do prestador (email e senha)
 export async function atualizarSegurancaPrestador(req: Request, res: Response) {
@@ -180,6 +221,20 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
 
     const senhaCriptografada = await hash(senha, 5)
     try {
+         //Não permite que o novo email que esta sendo atualizado,seja alterado para o mesmo email de outro usuário já existente na plataforma
+         const prestadorCadastro= await prismaClient.usuario.findUnique({
+            where: {
+                email: email
+            }
+        })
+        
+       if(prestadorCadastro === null){
+        const prestador = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
+
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -189,17 +244,25 @@ export async function atualizarSegurancaPrestador(req: Request, res: Response) {
                 senha: senhaCriptografada
             }
         })
-        return res.status(201).json("Prestador atualizado com sucesso ")
+        return res.status(200).json(`Prestador ${prestador?.nome} atualizado com sucesso`)
+    } else if (prestadorCadastro?.id !== id) {
+        return res.status(409).json({ error: "Já existe outro usuário cadastrado com esse email na plataforma! Atualize o campo email com um email válido!" });
+    }
     } catch (error) {
-        return res.status(404).json({ error: "Erro a atualizar prestador" })
+        return res.status(500).json({ error: "Erro a atualizar prestador" })
     }
 };
 
 
-// Listando todos os usuários prestadores com detalhes
+// Listando apenas usuários prestadores de serviço
 export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
-        const usuariosComPrestadores = await prismaClient.usuario.findMany({
+        const usuariosPrestadores = await prismaClient.usuario.findMany({
+            where: {
+                prestador: {
+                    isNot: null // Verifica se o campo prestador não é nulo (ou seja, usuário é um prestador)
+                }
+            },
             select: {
                 id: true,
                 nome: true,
@@ -215,13 +278,12 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
             },
         });
 
-        return res.status(200).json(usuariosComPrestadores);
+        return res.status(200).json(usuariosPrestadores);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: "Erro ao obter usuários e prestadores de serviço" });
+        return res.status(500).json({ error: "Erro ao obter prestadores de serviço" });
     }
 };
-
 
 
 // Listando os prestadores por tipo de serviço
@@ -247,7 +309,6 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
                         email: true,
                         telefone: true,
                         foto: true,
-                        // cliente: true,  verificar depois se eu quiser ver clientes associados a prestador
                     }
                 },
             }
@@ -267,18 +328,23 @@ export async function listarPrestadoresPorServico(req: Request, res: Response) {
             };
         });
 
-        res.json({ prestadores: prestadoresComUsuarioPrimeiro });
+        res.status(200).json({ prestadores: prestadoresComUsuarioPrimeiro });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
     }
 };
 
-//Deletando prestador
+
+// Deletar prestador
 export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado
-    console.log(id);
 
     try {
+        const prestador = await prismaClient.usuario.findUnique({
+            where: {
+                id
+            }
+        });
         // Deletando todos os anúncios do usuário Prestador antes de deletar o prestador
         await prismaClient.anuncio.deleteMany({
             where: {
@@ -302,7 +368,7 @@ export async function deletarPrestador(req: Request, res: Response) {
                     },
                 });
 
-                return res.status(201).json({ message: 'Prestador deletado com sucesso!' });
+                return res.status(200).json({ message: `Prestador ${prestador?.nome} deletado com sucesso!` });
             } catch (error) {
                 // Caso haja falha ao deletar o usuário após excluir o prestador
                 return res.status(500).json({ error: 'Erro ao deletar o usuário', details: error });
