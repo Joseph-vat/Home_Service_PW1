@@ -174,7 +174,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
                 cnpj:cnpj
             }
         })
-        if (prestadorCadastro?.usuarioIdPrestador !== id) {
+        if (prestadorCadastro?.usuarioIdPrestador !== id && prestadorCadastro?.cnpj !== undefined) {
             return res.status(409).json({ error: "Já existe outro prestador cadastrado com esse CNPJ! Atualize o campo CNPJ com um CNPJ válido!" });
         }
         const atualizaUsuario = await prismaClient.usuario.update({

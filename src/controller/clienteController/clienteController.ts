@@ -163,7 +163,9 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
                 cpf: cpf
             }
         })
-        if (clienteCadastro?.usuarioIdCliente !== id) {
+        console.log(clienteCadastro?.cpf);
+        
+        if (clienteCadastro?.usuarioIdCliente !== id && clienteCadastro?.cpf !== undefined) {
             return res.status(409).json({ error: "Já existe outro cliente cadastrado com esse CPF! Atualize o campo CPF com um CPF válido!" });
         }
         const atualizaUsuario = await prismaClient.usuario.update({
