@@ -1,4 +1,4 @@
-import { criarAnuncio, deletaAnuncio, editaAnuncio, listaAnuncioPrestador, listaTodosAnuncios, listarCategorias } from "../../controller/anuncioController/anuncioController";
+import { criarAnuncio, deletaAnuncio, editaAnuncio, listaAnuncioPrestador, listaTodosAnuncios } from "../../controller/anuncioController/anuncioController";
 import express from 'express';
 import { upload } from "../../config/multerConfig";
 import { retornaPrestadorExistente } from "../../middlewares/verificaPrestador";
@@ -17,9 +17,6 @@ anuncioRoutes.get('/anunciosPrestador', retornaPrestadorExistente, listaAnuncioP
 
 // lista todos os anuncios cadastrados
 anuncioRoutes.get('/anuncios', listaTodosAnuncios);
-
-// lista todos as categorias cadastrados
-anuncioRoutes.get('/anunciosCategorias',listarCategorias);
 
 // edita um anuncio 
 anuncioRoutes.put('/anuncios/:id', retornaPrestadorExistente, autenticaTokenPrestador, editaAnuncio);

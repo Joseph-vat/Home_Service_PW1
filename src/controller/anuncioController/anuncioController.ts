@@ -82,16 +82,6 @@ export async function listaAnuncioPrestador(req: Request, res: Response) {
 }
 
 
-// // lista todos os anuncios cadastrados
-// export async function listaTodosAnuncios(req: Request, res: Response) {
-//     try {
-//         const todosAnuncios = await prismaClient.anuncio.findMany();
-//         return res.status(200).json(todosAnuncios)
-//     }
-//     catch (Error) {
-//         res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
-//     }
-// };
 
 // lista todos os anuncios cadastrados
 export async function listaTodosAnuncios(req: Request, res: Response) {
@@ -100,7 +90,22 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
             include: {
                 prestador: {
                     include: {
-                        usuario: true,
+                        usuario: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                email: true,
+                                telefone: true,
+                                foto: true, // Inclua outros campos que desejar, mas não a senha
+                            },
+                        },
+                    },
+                },
+                categoria: {
+                    select: {
+                        id: true,
+                        servico: true,
+                        icone: true,
                     },
                 },
             },
@@ -109,8 +114,7 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
     } catch (Error) {
         res.status(400).json({ Error: "Não foi possível encontrar anúncios!" });
     }
-};
-
+}
 
 
 // edita um anuncio 
@@ -173,19 +177,3 @@ export async function deletaAnuncio(req: Request, res: Response) {
         res.status(400).json({ Error: "Não foi possível deletar anúncio!" })
     }
 };
-
-// Função para listar um enum de categorias na hora de criar um anúncio
-export async function listarCategorias(req: Request, res: Response) {
-    try {
-        const categorias = await prismaClient.categoria.findMany({
-            select: {
-                id: true,
-                servico: true,
-            },
-        });
-        return res.status(200).json(categorias);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Erro ao listar categorias' });
-    }
-}
