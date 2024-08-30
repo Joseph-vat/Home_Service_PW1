@@ -61,30 +61,56 @@ export async function criarAnuncio(req: Request, res: Response) {
 
 // lista os anuncios associados a um prestador
 export async function listaAnuncioPrestador(req: Request, res: Response) {
-    const prestadorId = req.userExpr.id
+    const prestadorId = req.userExpr.id;
     try {
         const anuncios = await prismaClient.anuncio.findMany({
             where: {
-                prestadorId
-            }
+                prestadorId,
+            },
+            include: {
+                prestador: {
+                    include: {
+                        usuario: true,
+                    },
+                },
+            },
         });
-        return res.status(200).json(anuncios)
+        return res.status(200).json(anuncios);
+    } catch (Error) {
+        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" });
     }
-    catch (Error) {
-        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
-    }
-};
+}
+
+
+// // lista todos os anuncios cadastrados
+// export async function listaTodosAnuncios(req: Request, res: Response) {
+//     try {
+//         const todosAnuncios = await prismaClient.anuncio.findMany();
+//         return res.status(200).json(todosAnuncios)
+//     }
+//     catch (Error) {
+//         res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
+//     }
+// };
 
 // lista todos os anuncios cadastrados
 export async function listaTodosAnuncios(req: Request, res: Response) {
     try {
-        const todosAnuncios = await prismaClient.anuncio.findMany();
-        return res.status(200).json(todosAnuncios)
-    }
-    catch (Error) {
-        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" })
+        const todosAnuncios = await prismaClient.anuncio.findMany({
+            include: {
+                prestador: {
+                    include: {
+                        usuario: true,
+                    },
+                },
+            },
+        });
+        return res.status(200).json(todosAnuncios);
+    } catch (Error) {
+        res.status(400).json({ Error: "Não foi possível encontrar anúncios!" });
     }
 };
+
 
 
 // edita um anuncio 

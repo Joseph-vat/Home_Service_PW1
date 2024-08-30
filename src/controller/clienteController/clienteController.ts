@@ -204,34 +204,6 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
     }
 };
 
-//Listando todos os clientes  (DECIDIR SE ISSO AINDA VAI PERMANECER)
-export async function listarClientes(req: Request, res: Response) {
-    try {
-        const clientes = await prismaClient.usuario.findMany({
-            where: {
-                prestador: {
-                    is: null
-                }
-            },
-            select: {
-                id: true,
-                nome: true,
-                email: true,
-                telefone: true,
-                foto: true,
-                cliente: {
-                    select: {
-                        cpf: true,
-                        endereco: true,
-                    },
-                },
-            },
-        })
-        return res.status(200).json(clientes)
-    } catch (error) {
-        return res.status(500).json({ error: "Erro ao listar clientes" })
-    }
-};
 
 //Deletando cliente
 export async function deletarCliente(req: Request, res: Response) {

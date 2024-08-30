@@ -23,7 +23,7 @@ prestadorRoutes.put('/prestador', retornaPrestadorExistente, autenticaTokenPrest
 // Listando todos os usuários com detalhes de um determinado prestador (se existirem)
 prestadorRoutes.get('/prestador', listarTodosPrestadores)
 
-// Listando os prestadores por tipo de serviço
+// Listando os prestadores por tipo de serviço (Categoria)
 prestadorRoutes.get('/prestadores/categoria', listarPrestadoresPorCategoria);
 
 prestadorRoutes.get('/whatsapp/:id', gerarLinkWhatsAppDoPrestador);
