@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorSeguranca, validaPrestadorLogin } from "../../validacoes/validaPrestador";
+import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorLogin } from "../../validacoes/validaPrestador";
 
 
 
@@ -14,7 +14,7 @@ app.use(express.json())
 
 // Criar prestador
 export async function criarPrestador(req: Request, res: Response) {
-    const { nome, email, senha, telefone, cnpj, horarioDisponibilidade } = req.body
+    const { nome, email, senha, telefone, cnpj, horarioDisponibilidade, latitude, longitude } = req.body
 
     // Verificar se o cliente já está cadastrado
     const usuarioCadastro = await prismaClient.usuario.findUnique({
@@ -34,7 +34,9 @@ export async function criarPrestador(req: Request, res: Response) {
         senha,
         telefone,
         cnpj,
-        horarioDisponibilidade
+        horarioDisponibilidade,
+        latitude,
+        longitude
     });
 
     if (validacaoResult !== null) {
@@ -53,18 +55,23 @@ export async function criarPrestador(req: Request, res: Response) {
             return res.status(409).json({ error: "Já existe prestador cadastrado para esse CNPJ" });
         }
         const senhaCriptografada = await hash(senha, 5)
+        const fotoPadrao = `${req.protocol}://${req.get('host')}/uploads/defaults/default.jpg`;
+        
         const novoUsuario = await prismaClient.usuario.create({
             data: {
                 nome,
                 email,
                 senha: senhaCriptografada,
                 telefone,
+                foto: fotoPadrao
             }
         })
         const novoPrestador = await prismaClient.prestadorServico.create({
             data: {
                 cnpj,
                 horarioDisponibilidade,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
                 anuncios: {
                     create: []
                 },
@@ -80,7 +87,6 @@ export async function criarPrestador(req: Request, res: Response) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
 };
-
 
 //Cria token para determinado usuario (Fazer login)
 export async function fazerLogin(req: Request, res: Response) {
@@ -127,11 +133,19 @@ export async function fazerLogin(req: Request, res: Response) {
 
 };
 
-
 //criar foto do perfil 
 export async function atualizarFotoPerfilPrestador(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
+
+
+    if (!nomeFoto) {
+        return res.status(400).json({ error: "Nenhuma foto foi enviada" });
+    }
+
+    const caminhoFoto = `${req.protocol}://${req.get('host')}/uploads/prestador/${nomeFoto}`;
+
+
 
     try {
         const atualizaUsuario = await prismaClient.usuario.update({
@@ -139,20 +153,19 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
                 id: idUsuario
             },
             data: {
-                foto: nomeFoto
+                foto: caminhoFoto
             }
         })
         return res.status(200).json("Foto atualizada com sucesso!")
     } catch (error) {
         return res.status(400).json({ error: "Erro a atualizar foto do prestador" })
     }
-}
-
+};
 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, cnpj, horarioDisponibilidade } = req.body
+    const { nome, telefone, cnpj, horarioDisponibilidade, latitude, longitude} = req.body
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorAtualizacao({
@@ -160,6 +173,8 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
         telefone,
         cnpj,
         horarioDisponibilidade,
+        latitude,
+        longitude
     });
 
     if (validacaoResult !== null) {
@@ -192,7 +207,9 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
             },
             data: {
                 cnpj,
-                horarioDisponibilidade
+                horarioDisponibilidade,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude)
             }
         })
         return res.status(200).json(`Prestador ${nome} atualizado com sucesso`)
@@ -201,60 +218,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
     }
 };
 
-
-// Atualizando dados de segurança do prestador (email e senha)
-export async function atualizarSegurancaPrestador(req: Request, res: Response) {
-    const { email, senha } = req.body
-    const id = req.autenticado
-
-    // Validando os dados do prestador
-    const validacaoResult = await validaPrestadorSeguranca({
-        email,
-        senha
-    });
-
-    if (validacaoResult !== null) {
-        return res.status(400).json({ error: validacaoResult });
-    }
-
-    // Atualizando o prestador se a validação passar
-
-    const senhaCriptografada = await hash(senha, 5)
-    try {
-         //Não permite que o novo email que esta sendo atualizado,seja alterado para o mesmo email de outro usuário já existente na plataforma
-         const prestadorCadastro= await prismaClient.usuario.findUnique({
-            where: {
-                email: email
-            }
-        })
-        
-       if(prestadorCadastro === null){
-        const prestador = await prismaClient.usuario.findUnique({
-            where: {
-                id
-            }
-        });
-
-        const atualizaUsuario = await prismaClient.usuario.update({
-            where: {
-                id: id
-            },
-            data: {
-                email,
-                senha: senhaCriptografada
-            }
-        })
-        return res.status(200).json(`Prestador ${prestador?.nome} atualizado com sucesso`)
-    } else if (prestadorCadastro?.id !== id) {
-        return res.status(409).json({ error: "Já existe outro usuário cadastrado com esse email na plataforma! Atualize o campo email com um email válido!" });
-    }
-    } catch (error) {
-        return res.status(500).json({ error: "Erro a atualizar prestador" })
-    }
-};
-
-
-// Listando apenas usuários prestadores de serviço
+// Listando prestadores de serviço
 export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
         const usuariosPrestadores = await prismaClient.usuario.findMany({
@@ -273,6 +237,8 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
                     select: {
                         cnpj: true,
                         horarioDisponibilidade: true,
+                        latitude: true,
+                        longitude: true
                     },
                 },
             },
@@ -285,55 +251,121 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
     }
 };
 
+// Listando prestadores por categoria
+export async function listarPrestadoresPorCategoria(req: Request, res: Response) {
+    const { categoriaId } = req.body; // Pega o ID da categoria do corpo da solicitação
 
-// Listando os prestadores por tipo de serviço
-export async function listarPrestadoresPorServico(req: Request, res: Response) {
-    const servico = <string>req.body.servico.toLowerCase();
+    if (!categoriaId) {
+        return res.status(400).json({ error: 'O ID da categoria é necessário' });
+    }
 
     try {
+        // Primeiro, encontrar todos os anúncios que pertencem à categoria fornecida
+        const anuncios = await prismaClient.anuncio.findMany({
+            where: {
+                categoriaId: categoriaId
+            },
+            select: {
+                id: true,
+                titulo: true,
+                preco: true,
+                prestadorId: true,
+                categoria: {
+                    select: {
+                        icone: true,
+                    },
+                },
+            },
+        });
+
+        if (anuncios.length === 0) {
+            return res.status(404).json({ error: 'Nenhum anúncio encontrado para essa categoria' });
+        }
+
+        // Obter IDs dos prestadores baseados nos anúncios encontrados
+        const prestadoresIds = anuncios.map(anuncio => anuncio.prestadorId);
+
+        // Encontrar prestadores associados aos IDs obtidos
         const prestadores = await prismaClient.prestadorServico.findMany({
             where: {
-                anuncios: {
-                    some: {
-                        servico: {
-                            equals: servico
-                        }
-                    }
+                usuarioIdPrestador: {
+                    in: prestadoresIds
                 }
             },
             include: {
                 usuario: {
                     select: {
-                        id: false,
+                        id: true,
                         nome: true,
                         email: true,
                         telefone: true,
                         foto: true,
                     }
-                },
+                }
             }
         });
 
         if (prestadores.length === 0) {
-            return res.status(404).json({ error: 'Nenhum prestador encontrado para esse serviço' });
+            return res.status(404).json({ error: 'Nenhum prestador encontrado para essa categoria' });
         }
 
-        const prestadoresComUsuarioPrimeiro = prestadores.map((prestador) => {
-            return {
-                ...prestador.usuario,
-                prestador: {
-                    cnpj: prestador.cnpj,
-                    horarioDisponibilidade: prestador.horarioDisponibilidade
-                }
-            };
-        });
+        // Mapear anúncios com dados dos prestadores
+        const resultado = anuncios.map(anuncio => {
+            const prestador = prestadores.find(p => p.usuarioIdPrestador === anuncio.prestadorId);
+            if (prestador) {
+                return {
+                    prestador: {
+                        nome: prestador.usuario.nome,
+                        horarioDisponibilidade: prestador.horarioDisponibilidade,
+                        latitude: prestador.latitude,
+                        longitude: prestador.longitude
+                    },
+                    anuncio: {
+                        titulo: anuncio.titulo,
+                        preco: anuncio.preco,
+                        iconeCategoria: anuncio.categoria.icone
+                    }
+                };
+            }
+            return null;
+        }).filter(item => item !== null);
 
-        res.status(200).json({ prestadores: prestadoresComUsuarioPrimeiro });
+        res.status(200).json({ resultado });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao listar prestadores por serviço' });
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao listar prestadores por categoria' });
     }
 };
 
+// Função para gerar link do WhatsApp
+function gerarLinkWhatsApp(telefone: string): string {
+    const telefoneFormatado = telefone.replace(/\D/g, '');
+    return `https://wa.me/${telefoneFormatado}`;
+};
+
+// Função para buscar o telefone do prestador e chmar a função que gera o link do WhatsApp
+export async function gerarLinkWhatsAppDoPrestador(req: Request, res: Response) {
+    const { id } = req.params; // Obtém o ID do usuário dos parâmetros da requisição
+
+    try {
+        // Buscar o usuário pelo ID
+        const usuario = await prismaClient.usuario.findUnique({
+            where: { id },
+            select: { telefone: true } // Seleciona apenas o campo telefone
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        // Gerar o link do WhatsApp
+        const linkWhatsApp = gerarLinkWhatsApp(usuario.telefone);
+
+        return res.status(200).json({ link: linkWhatsApp });
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao gerar link do WhatsApp' });
+    }
+};
 
 // Deletar prestador
 export async function deletarPrestador(req: Request, res: Response) {

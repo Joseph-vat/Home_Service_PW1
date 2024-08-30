@@ -29,6 +29,10 @@ export function validaPrestadorCriacao(prestador: usuarioPrestador) {
     cnpj: z.string({ required_error: 'CNPJ é obrigatório' }).trim()
       .refine((value) => validaCnpj(value), { message: 'CNPJ incorreto: digite no padrão XX.XXX.XXX/XXXX-XX.' }),
     horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' }),
+    latitude: z.string({ required_error: 'Latitude é obrigatório' }).trim()
+        .min(2, 'A latitude deve ter no mínimo 1 caractere'),
+        longitude: z.string({ required_error: 'Longitude é obrigatório' }).trim()
+        .min(2, 'A longitude deve ter no mínimo 1 caractere'),
   })
 
   const result = schema.safeParse(prestador);
@@ -50,25 +54,12 @@ export function validaPrestadorAtualizacao(prestador: usuarioPrestadorAtualizaca
     }),
     cnpj: z.string({ required_error: 'CNPJ é obrigatório' }).trim()
       .refine((value) => validaCnpj(value), { message: 'CNPJ incorreto: digite no padrão XX.XXX.XXX/XXXX-XX.' }),
-    horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' })
-  })
-
-  const result = schema.safeParse(prestador);
-
-  if (!result.success) {
-    const errors = result.error.errors.map((err: any) => err.message);
-    return errors;
-  }
-  return null; // Retorna null se a validação passar
-}
-
-////Validando dados do prestador na atualização de dados sensiveis
-export function validaPrestadorSeguranca(prestador: usuarioPrestadorAtualizaDadosSensiveis) {
-  const schema = z.object({
-    email: z.string({ required_error: 'Email é obrigatório' }).trim()
-      .email('E-mail inválido'),
-    senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
-      .min(6, 'A senha deve ter pelo menos 6 caracteres')
+    horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' }),
+    latitude: z.string({ required_error: 'Latitude é obrigatório' }).trim()
+    .min(2, 'A latitude deve ter no mínimo 1 caractere'),
+    longitude: z.string({ required_error: 'Longitude é obrigatório' }).trim()
+    .min(2, 'A longitude deve ter no mínimo 1 caractere'),
+    
   })
 
   const result = schema.safeParse(prestador);

@@ -2,12 +2,13 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaClienteSeguranca, validaClienteAtualizacao, validaClienteCriacao, validaClienteLogin } from '../../validacoes/validaCliente'
+import { validaClienteAtualizacao, validaClienteCriacao, validaClienteLogin } from '../../validacoes/validaCliente'
 import { prismaClient } from '../../database/prismaClient';
 
 const app = express();
 app.use(express.json())
 
+//Criar cliente
 export async function criarCliente(req: Request, res: Response) {
     const { nome, email, senha, telefone, cpf, endereco } = req.body
 
@@ -47,12 +48,15 @@ export async function criarCliente(req: Request, res: Response) {
             return res.status(409).json({ error: "Já existe cliente cadastrado para esse CPF" });
         }
         const senhaCriptografada = await hash(senha, 5)
+        const fotoPadrao = `${req.protocol}://${req.get('host')}/uploads/defaults/default.jpg`;
+
         const novoUsuario = await prismaClient.usuario.create({
             data: {
                 nome,
                 email,
                 senha: senhaCriptografada,
                 telefone,
+                foto: fotoPadrao
             }
         })
         const novoCliente = await prismaClient.cliente.create({
@@ -122,13 +126,21 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
 
+    if (!nomeFoto) {
+        return res.status(400).json({ error: "Nenhuma foto foi enviada" });
+    }
+
+     // Constrói o caminho completo da URL para a foto
+    const caminhoFoto = `${req.protocol}://${req.get('host')}/uploads/cliente/${nomeFoto}`;
+
+
     try {
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: idUsuario
             },
             data: {
-                foto: nomeFoto
+                foto: caminhoFoto
             }
         })
         return res.status(200).json("Foto atualizada com sucesso!")
@@ -192,57 +204,7 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
     }
 };
 
-// Atualizando dados de segurança do cliente (email e senha)
-export async function atualizarSegurancaCliente(req: Request, res: Response) {
-    const { email, senha } = req.body
-    const id = req.autenticado
-
-    // Validando os dados do cliente
-    const validacaoResult = await validaClienteSeguranca({
-        email,
-        senha
-    });
-
-    if (validacaoResult !== null) {
-        return res.status(400).json({ error: validacaoResult });
-    }
-
-    // Atualizando o cliente se a validação passar
-
-    const senhaCriptografada = await hash(senha, 5)
-    try {
-
-        //Não permite que o novo email que esta sendo atualizado,seja alterado para o mesmo email de outro usuário já existente na plataforma
-        const clienteCadastro = await prismaClient.usuario.findUnique({
-            where: {
-                email: email
-            }
-        })
-
-        if (clienteCadastro === null) {
-            const cliente = await prismaClient.usuario.findUnique({
-                where: {
-                    id
-                }
-            });
-            const atualizaUsuario = await prismaClient.usuario.update({
-                where: {
-                    id: id
-                },
-                data: {
-                    email,
-                    senha: senhaCriptografada
-                }
-            })
-            return res.status(200).json(`Cliente ${cliente?.nome} atualizado com sucesso!`)
-        } else if (clienteCadastro?.id !== id) {
-            return res.status(409).json({ error: "Já existe outro usuário cadastrado com esse email na plataforma! Atualize o campo email com um email válido!" });
-        }
-    } catch (error) {
-        return res.status(400).json({ error: "Erro ao atualizar cliente" })
-    }
-};
-//Listando todos os clientes
+//Listando todos os clientes  (DECIDIR SE ISSO AINDA VAI PERMANECER)
 export async function listarClientes(req: Request, res: Response) {
     try {
         const clientes = await prismaClient.usuario.findMany({

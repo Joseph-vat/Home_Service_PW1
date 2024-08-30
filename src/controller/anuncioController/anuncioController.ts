@@ -6,8 +6,7 @@ import { title } from 'node:process';
 
 // cria anuncio associado a um prestador 
 export async function criarAnuncio(req: Request, res: Response) {
-    const { titulo, descricao, latitude, longitude, preco } = req.body;
-    const servico = <string>req.body.servico.toLowerCase();
+    const { titulo, descricao, preco, categoriaId } = req.body;
     const id = req.autenticado;
 
     // Validando os dados do anúncio
@@ -15,9 +14,7 @@ export async function criarAnuncio(req: Request, res: Response) {
         titulo,
         descricao,
         preco,
-        servico,
-        latitude,
-        longitude
+        categoriaId
     });
 
     if (validacaoResult !== null) {
@@ -37,14 +34,16 @@ export async function criarAnuncio(req: Request, res: Response) {
     }
 
     try {
-        const novoAnunicio = await prismaClient.anuncio.create({
+        const novoAnuncio = await prismaClient.anuncio.create({
             data: {
                 titulo,
                 descricao,
                 preco,
-                servico,
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude),
+                categoria: {
+                    connect: {
+                        id: categoriaId
+                    }
+                },
                 prestador: {
                     connect: {
                         usuarioIdPrestador: id
@@ -87,9 +86,10 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
     }
 };
 
+
 // edita um anuncio 
 export async function editaAnuncio(req: Request, res: Response) {
-    const { titulo, descricao, preco, servico, latitude, longitude } = req.body
+    const { titulo, descricao, preco, categoriaId} = req.body
     const id = req.params.id;
 
     // Validando os dados do anúncio
@@ -97,9 +97,7 @@ export async function editaAnuncio(req: Request, res: Response) {
         titulo,
         descricao,
         preco,
-        servico,
-        latitude,
-        longitude
+        categoriaId
     });
 
     if (validacaoResult !== null) {
@@ -113,10 +111,12 @@ export async function editaAnuncio(req: Request, res: Response) {
             data: {
                 titulo,
                 descricao,
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude),
                 preco,
-                servico
+                categoria: {
+                    connect: {
+                        id: categoriaId
+                    }
+                }
             }
         });
         res.status(200).json(`Anúncio ${titulo} editado com sucesso!`);
@@ -147,3 +147,19 @@ export async function deletaAnuncio(req: Request, res: Response) {
         res.status(400).json({ Error: "Não foi possível deletar anúncio!" })
     }
 };
+
+// Função para listar um enum de categorias na hora de criar um anúncio
+export async function listarCategorias(req: Request, res: Response) {
+    try {
+        const categorias = await prismaClient.categoria.findMany({
+            select: {
+                id: true,
+                servico: true,
+            },
+        });
+        return res.status(200).json(categorias);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Erro ao listar categorias' });
+    }
+}

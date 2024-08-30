@@ -1,5 +1,8 @@
 import { z, ZodError } from 'zod';
+import { PrismaClient } from '@prisma/client';
 import { anuncio } from '../interfaces/interfaceAnuncio';
+
+const prisma = new PrismaClient();
 
 
 function validaPreco(preco: string): boolean {
@@ -9,26 +12,29 @@ function validaPreco(preco: string): boolean {
 }
 
 
-export function validaAnuncio(prestador: anuncio) {
+export async function validaAnuncio(anuncio: anuncio) {
     const schema = z.object({
         titulo: z.string({ required_error: 'Título é obrigatório' }).trim()
         .min(3, 'O título deve ter no mínimo 3 caracteres'),
         descricao: z.string({ required_error: 'Descrição é obrigatório' }).trim(),
         preco: z.string({ required_error: 'O preço não pode estar vazio' }).trim()
             .refine((value) => validaPreco(value), { message: 'O preço deve estar no formato de moeda real (R$ 10,00).' }),
-        servico: z.string({ required_error: 'Serviço é obrigatório' }).trim()
-        .min(3, 'O serviço deve ter no mínimo 3 caracteres'),
-        latitude: z.string({ required_error: 'Latitude é obrigatório' }).trim()
-        .min(2, 'A latitude deve ter no mínimo 1 caractere'),
-        longitude: z.string({ required_error: 'Longitude é obrigatório' }).trim()
-        .min(2, 'A longitude deve ter no mínimo 1 caractere'),
+        categoriaId: z.string({ required_error: 'Categoria é obrigatória' }).trim()
     })
 
-    const result = schema.safeParse(prestador);
+    const result = schema.safeParse(anuncio);
 
     if (!result.success) {
         const errors = result.error.errors.map((err: any) => err.message);
         return errors;
+    }
+    // Verificação de existência da categoria no banco de dados
+    const categoria = await prisma.categoria.findUnique({
+        where: { id: anuncio.categoriaId },
+    });
+
+    if (!categoria) {
+        return ['Categoria inválida.'];
     }
     return null; // Retorna null se a validação passar
 }

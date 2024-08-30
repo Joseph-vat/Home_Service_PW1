@@ -1,15 +1,15 @@
 import crypto from 'node:crypto';
 import multer from 'multer';
 import { resolve } from 'node:path';
+import { Request, Response, NextFunction } from 'express';
 
-
-const fileHash = crypto.randomBytes(16).toString('hex');
 
 export function upload(destination: string) {
   return multer({
     storage: multer.diskStorage({
       destination: resolve(__dirname, "..", destination),
       filename: (req, file, cb) => {
+        const fileHash = crypto.randomBytes(16).toString('hex');
         const filename = `${fileHash}-${file.originalname}`;
 
         cb(null, filename);
