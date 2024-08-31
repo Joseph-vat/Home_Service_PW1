@@ -6,6 +6,43 @@ import { resolve } from 'path';
 
 
 // Cria a função de criação de categorias
+// export async function criarCategoria(req: Request, res: Response) {
+//     try {
+//         // Verifica se o arquivo foi enviado
+//         if (!req.file) {
+//             return res.status(400).json({ error: 'Arquivo não enviado' });
+//         }
+
+//         const { servico } = req.body;
+//         const file = req.file; // Tipo do arquivo
+//         const filename = file.filename; // Acessa o nome do arquivo
+
+//         // Verifica se o campo 'servico' está presente
+//         if (!servico || !filename) {
+//             return res.status(400).json({ error: "Campos 'servico' e 'icone' são obrigatórios." });
+//         }
+
+//         // Constrói o caminho completo para o ícone da categoria
+//         // const caminhoIcone = `${req.protocol}://${req.get('host')}/uploads/categorias/${filename}`;
+//         // Construir o caminho completo usando file://
+//         const caminhoIcone = `file://${resolve(__dirname, '..', 'uploads', 'categorias', filename)}`;
+
+//         // Cria uma nova categoria no banco de dados
+//         const novaCategoria = await prismaClient.categoria.create({
+//             data: {
+//                 servico,
+//                 icone: caminhoIcone, // Armazenamos o caminho completo do arquivo na base de dados
+//             },
+//         });
+
+//         res.status(201).json(novaCategoria);
+//     } catch (error) {
+//         console.error('Erro ao criar categoria:', error);
+//         res.status(500).json({ error: 'Erro ao criar a categoria' });
+//     }
+// }
+
+// Cria a função de criação de categorias
 export async function criarCategoria(req: Request, res: Response) {
     try {
         // Verifica se o arquivo foi enviado
@@ -14,7 +51,6 @@ export async function criarCategoria(req: Request, res: Response) {
         }
 
         const { servico } = req.body;
-        console.log(servico)
         const file = req.file; // Tipo do arquivo
         const filename = file.filename; // Acessa o nome do arquivo
 
@@ -23,10 +59,14 @@ export async function criarCategoria(req: Request, res: Response) {
             return res.status(400).json({ error: "Campos 'servico' e 'icone' são obrigatórios." });
         }
 
+        // Constrói o caminho completo para o ícone da categoria
+        const caminhoIcone = `${req.protocol}://${req.get('host')}/files/categorias/${filename}`;
+
+        // Cria uma nova categoria no banco de dados
         const novaCategoria = await prismaClient.categoria.create({
             data: {
                 servico,
-                icone: filename, // Armazenamos o nome do arquivo na base de dados
+                icone: caminhoIcone, // Armazenamos o caminho completo do arquivo na base de dados
             },
         });
 
@@ -36,7 +76,6 @@ export async function criarCategoria(req: Request, res: Response) {
         res.status(500).json({ error: 'Erro ao criar a categoria' });
     }
 }
-
 
 
 //Listar todas as categorias
@@ -53,9 +92,10 @@ export async function listarCategorias(req: Request, res: Response) {
     }
 }
 
+
 // Editar uma categoria
 export async function editarCategoria(req: Request, res: Response) {
-    const { id } = req.params; // Pega o ID da categoria dos parâmetros da rota
+    const id = req.params.id as string; // Pega o ID da categoria como string
 
     // Usa a função de upload com o destino desejado
     upload('uploads/categorias')(req, res, async (err: any) => {
@@ -67,19 +107,28 @@ export async function editarCategoria(req: Request, res: Response) {
         const file = req.file; // Tipo do arquivo
 
         try {
-            // Verifica se o campo 'servico' ou o arquivo de ícone foi enviado
-            if (!servico && !file) {
-                return res.status(400).json({ error: "Pelo menos um dos campos 'servico' ou 'icone' deve ser fornecido." });
+            // Verifica se a categoria existe
+            const categoriaExistente = await prismaClient.categoria.findUnique({
+                where: { id: id }, // Usando o id como string
+            });
+
+            if (!categoriaExistente) {
+                return res.status(404).json({ error: 'Categoria não encontrada' });
             }
 
             // Preparando os dados para atualização
             const data: any = {};
             if (servico) data.servico = servico;
-            if (file) data.icone = file.filename;
+            if (file) {
+                // Atualiza o caminho do ícone
+                const filename = file.filename;
+                const caminhoIcone = `${req.protocol}://${req.get('host')}/files/categorias/${filename}`;
+                data.icone = caminhoIcone;
+            }
 
             // Atualiza a categoria no banco de dados
             const categoriaAtualizada = await prismaClient.categoria.update({
-                where: { id },
+                where: { id: id }, // Usando o id como string
                 data,
             });
 
@@ -91,6 +140,8 @@ export async function editarCategoria(req: Request, res: Response) {
     });
 }
 
+
+//Deletar categoria
 export async function deletarCategoria(req: Request, res: Response) {
     const { id } = req.params; // Pega o ID da categoria dos parâmetros da rota
 

@@ -7,6 +7,7 @@ import { criarCategoria, listarCategorias, editarCategoria, deletarCategoria} fr
 const categoriaRoutes = express();
 categoriaRoutes.use(express.json())
 
+
 //Criar categoria
 categoriaRoutes.post('/categorias', upload('uploads/categorias'), criarCategoria);
 
