@@ -5,44 +5,7 @@ import { unlink } from 'fs';
 import { resolve } from 'path';
 
 
-// Cria a função de criação de categorias
-// export async function criarCategoria(req: Request, res: Response) {
-//     try {
-//         // Verifica se o arquivo foi enviado
-//         if (!req.file) {
-//             return res.status(400).json({ error: 'Arquivo não enviado' });
-//         }
-
-//         const { servico } = req.body;
-//         const file = req.file; // Tipo do arquivo
-//         const filename = file.filename; // Acessa o nome do arquivo
-
-//         // Verifica se o campo 'servico' está presente
-//         if (!servico || !filename) {
-//             return res.status(400).json({ error: "Campos 'servico' e 'icone' são obrigatórios." });
-//         }
-
-//         // Constrói o caminho completo para o ícone da categoria
-//         // const caminhoIcone = `${req.protocol}://${req.get('host')}/uploads/categorias/${filename}`;
-//         // Construir o caminho completo usando file://
-//         const caminhoIcone = `file://${resolve(__dirname, '..', 'uploads', 'categorias', filename)}`;
-
-//         // Cria uma nova categoria no banco de dados
-//         const novaCategoria = await prismaClient.categoria.create({
-//             data: {
-//                 servico,
-//                 icone: caminhoIcone, // Armazenamos o caminho completo do arquivo na base de dados
-//             },
-//         });
-
-//         res.status(201).json(novaCategoria);
-//     } catch (error) {
-//         console.error('Erro ao criar categoria:', error);
-//         res.status(500).json({ error: 'Erro ao criar a categoria' });
-//     }
-// }
-
-// Cria a função de criação de categorias
+// Cria categoria
 export async function criarCategoria(req: Request, res: Response) {
     try {
         // Verifica se o arquivo foi enviado
@@ -175,35 +138,5 @@ export async function deletarCategoria(req: Request, res: Response) {
         console.error('Erro ao deletar categoria:', error);
         return res.status(500).json({ error: 'Erro ao deletar a categoria' });
     }
-}
-
-// export async function editarCategoria(req: Request, res: Response) {
-//     const { id } = req.params; // ID da categoria a ser editada
-//     const { servico, icone } = req.body; // Dados para atualizar
-
-//     // Verifica se o ID e os campos necessários estão presentes
-//     if (!id || (!servico && !icone)) {
-//         return res.status(400).json({ Error: "ID da categoria e ao menos um campo a ser atualizado são obrigatórios." });
-//     }
-
-//     try {
-//         // Atualiza a categoria no banco de dados
-//         const categoriaAtualizada = await prismaClient.categoria.update({
-//             where: { id },
-//             data: {
-//                 servico: servico ?? undefined, // Atualiza apenas os campos fornecidos
-//                 icone: icone ?? undefined,
-//             },
-//         });
-
-//         // Retorna a categoria atualizada como resposta
-//         return res.status(200).json(categoriaAtualizada);
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ Error: "Não foi possível atualizar a categoria." });
-//     }
-// }
-function express() {
-    throw new Error('Function not implemented.');
 }
 

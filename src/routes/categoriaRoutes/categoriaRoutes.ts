@@ -14,7 +14,7 @@ categoriaRoutes.post('/categorias', upload('uploads/categorias'), criarCategoria
 // lista todos as categorias cadastrados
 categoriaRoutes.get('/listCategorias', listarCategorias);
 
-//Editar uma categgoria
+//Editar uma categoria
 categoriaRoutes.put('/categorias/:id', editarCategoria);
 
 //Deletar categoria

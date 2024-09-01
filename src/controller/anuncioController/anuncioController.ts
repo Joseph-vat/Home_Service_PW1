@@ -59,7 +59,7 @@ export async function criarAnuncio(req: Request, res: Response) {
 
 };
 
-// lista os anuncios associados a um prestador
+// Lista os anúncios associados a um prestador autenticado
 export async function listaAnuncioPrestador(req: Request, res: Response) {
     const prestadorId = req.userExpr.id;
     try {
@@ -70,18 +70,24 @@ export async function listaAnuncioPrestador(req: Request, res: Response) {
             include: {
                 prestador: {
                     include: {
-                        usuario: true,
+                        usuario: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                email: true,
+                                // Inclua aqui outros campos necessários, mas exclua a senha
+                            },
+                        },
                     },
                 },
+                categoria: true, // Inclui os dados da categoria associada ao anúncio
             },
         });
         return res.status(200).json(anuncios);
-    } catch (Error) {
+    } catch (error) {
         res.status(400).json({ Error: "Não foi possível encontrar anúncios!" });
     }
 }
-
-
 
 // lista todos os anuncios cadastrados
 export async function listaTodosAnuncios(req: Request, res: Response) {
@@ -113,6 +119,49 @@ export async function listaTodosAnuncios(req: Request, res: Response) {
         return res.status(200).json(todosAnuncios);
     } catch (Error) {
         res.status(400).json({ Error: "Não foi possível encontrar anúncios!" });
+    }
+}
+
+// Lista os anúncios cadastrados por categoria
+export async function listaAnunciosPorCategoria(req: Request, res: Response) {
+    // Obtém o ID da categoria da query string ou do corpo da requisição
+    const categoriaId =req.params.id as string;
+
+    if (!categoriaId) {
+        return res.status(400).json({ Error: 'Categoria ID é obrigatório.' });
+    }
+    try {
+        const anunciosPorCategoria = await prismaClient.anuncio.findMany({
+            where: {
+                categoriaId: categoriaId, // Filtra pelos anúncios da categoria especificada
+            },
+            include: {
+                prestador: {
+                    include: {
+                        usuario: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                email: true,
+                                telefone: true,
+                                foto: true, // Inclua outros campos que desejar, mas não a senha
+                            },
+                        },
+                    },
+                },
+                categoria: {
+                    select: {
+                        id: true,
+                        servico: true,
+                        icone: true,
+                    },
+                },
+            },
+        });
+        return res.status(200).json(anunciosPorCategoria);
+    } catch (error) {
+        console.error('Erro ao listar anúncios por categoria:', error);
+        res.status(400).json({ Error: "Não foi possível encontrar anúncios para a categoria especificada!" });
     }
 }
 
