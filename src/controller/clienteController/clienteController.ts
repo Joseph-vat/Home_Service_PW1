@@ -48,8 +48,8 @@ export async function criarCliente(req: Request, res: Response) {
             return res.status(409).json({ error: "Já existe cliente cadastrado para esse CPF" });
         }
         const senhaCriptografada = await hash(senha, 5)
-        const fotoPadrao = `${req.protocol}://${req.get('host')}/uploads/defaults/default.jpg`;
-
+        const fotoPadrao = `${req.protocol}://${req.get('host')}/files/defaults/default.jpg`;
+       
         const novoUsuario = await prismaClient.usuario.create({
             data: {
                 nome,
@@ -131,7 +131,7 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
     }
 
      // Constrói o caminho completo da URL para a foto
-    const caminhoFoto = `${req.protocol}://${req.get('host')}/uploads/cliente/${nomeFoto}`;
+    const caminhoFoto = `${req.protocol}://${req.get('host')}/files/cliente/${nomeFoto}`
 
 
     try {
