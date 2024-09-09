@@ -39,6 +39,9 @@ export async function criarPrestador(req: Request, res: Response) {
         longitude
     });
 
+    console.log(validacaoResult);
+    
+
     if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
 

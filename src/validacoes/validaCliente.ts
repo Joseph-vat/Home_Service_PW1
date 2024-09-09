@@ -30,7 +30,7 @@ export const validaClienteCriacao = (cliente: usuarioCliente) => {
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })
-
+    
     const result = schema.safeParse(cliente);
 
     if (!result.success) {

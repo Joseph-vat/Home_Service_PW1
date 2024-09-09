@@ -10,8 +10,8 @@ export interface usuarioPrestador {
     telefone: string;
     cnpj: string;
     horarioDisponibilidade: string;
-    latitude: string;
-    longitude: string;
+    latitude: number;
+    longitude: number;
 }
 
 export interface usuarioPrestadorAtualizacao {
