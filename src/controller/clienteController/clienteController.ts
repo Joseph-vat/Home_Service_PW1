@@ -4,6 +4,7 @@ import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
 import { validaClienteAtualizacao, validaClienteCriacao, validaClienteLogin } from '../../validacoes/validaCliente'
 import { prismaClient } from '../../database/prismaClient';
+import { log } from 'console';
 
 const app = express();
 app.use(express.json())
@@ -148,6 +149,45 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
         return res.status(500).json({ error: "Erro ao atualizar foto de cliente" })
     }
 }
+
+// Listando cliente (Dados do perfil)
+export async function listarPerfilCliente(req: Request, res: Response) {
+    const usuario = req.userExpr;
+    console.log(usuario);
+    
+
+    // Atualizando o prestador se a validação passar
+    try {
+        const cliente = await prismaClient.cliente.findUnique({
+            where: {
+                usuarioIdCliente: usuario.id
+            }
+        });
+        console.log(cliente);
+        
+
+        if (cliente == null) {
+            return res.status(409).json({ error: "Ocorreu um erro ao carregar dados do perfil! :(" });
+        }
+
+        const clienteCompleto = {
+            name: usuario.nome,
+            foto: usuario.foto,
+            email: usuario.email,
+            telefone: usuario.telefone,
+            cpf: cliente?.cpf,
+            endereco: cliente?.endereco,
+        }
+        console.log(clienteCompleto);
+        
+        return res.status(200).json(clienteCompleto);
+    }
+    catch (error) {
+        return res.status(500).json({ error: "Erro ao listar dados de perfil do cliente" })
+    }
+};
+
+
 
 // Atualizando perfil do cliente
 export async function atulizarPerfilCliente(req: Request, res: Response) {

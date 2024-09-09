@@ -62,6 +62,9 @@ export async function criarAnuncio(req: Request, res: Response) {
 // Lista os anúncios associados a um prestador autenticado
 export async function listaAnuncioPrestador(req: Request, res: Response) {
     const prestadorId = req.userExpr.id;
+    const prestadorIde = req.userExpr;
+    console.log(prestadorIde);
+    
     try {
         const anuncios = await prismaClient.anuncio.findMany({
             where: {

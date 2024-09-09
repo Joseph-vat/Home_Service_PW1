@@ -4,6 +4,7 @@ import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
 import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorLogin } from "../../validacoes/validaPrestador";
+import { log } from "console";
 
 
 
@@ -40,7 +41,7 @@ export async function criarPrestador(req: Request, res: Response) {
     });
 
     console.log(validacaoResult);
-    
+
 
     if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
@@ -58,8 +59,8 @@ export async function criarPrestador(req: Request, res: Response) {
             return res.status(409).json({ error: "Já existe prestador cadastrado para esse CNPJ" });
         }
         const senhaCriptografada = await hash(senha, 5)
-        const fotoPadrao =  `${req.protocol}://${req.get('host')}/files/defaults/default.jpg`;
-        
+        const fotoPadrao = `${req.protocol}://${req.get('host')}/files/defaults/default.jpg`;
+
         const novoUsuario = await prismaClient.usuario.create({
             data: {
                 nome,
@@ -166,7 +167,7 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, cnpj, horarioDisponibilidade, latitude, longitude} = req.body
+    const { nome, telefone, cnpj, horarioDisponibilidade, latitude, longitude } = req.body
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorAtualizacao({
@@ -178,6 +179,9 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
         longitude
     });
 
+    console.log(validacaoResult);
+
+
     if (validacaoResult !== null) {
         return res.status(400).json({ error: validacaoResult });
     }
@@ -185,9 +189,9 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
     // Atualizando o prestador se a validação passar
     try {
         //Não permite que o novo CNPJ que esta sendo atualizado,seja alterado para o mesmo CNPJ de outro prestador já existente na plataforma
-        const prestadorCadastro= await prismaClient.prestadorServico.findUnique({
+        const prestadorCadastro = await prismaClient.prestadorServico.findUnique({
             where: {
-                cnpj:cnpj
+                cnpj: cnpj
             }
         })
         if (prestadorCadastro?.usuarioIdPrestador !== id && prestadorCadastro?.cnpj !== undefined) {
@@ -219,7 +223,7 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
     }
 };
 
-// Listando prestadores de serviço
+// Listando todos os prestadores de serviço
 export async function listarTodosPrestadores(req: Request, res: Response) {
     try {
         const usuariosPrestadores = await prismaClient.usuario.findMany({
@@ -252,7 +256,38 @@ export async function listarTodosPrestadores(req: Request, res: Response) {
     }
 };
 
-// Listando prestadores por categoria
+// Listando prestador (Dados do perfil)
+export async function listarPerfilPrestador(req: Request, res: Response) {
+    const usuario = req.userExpr;
+
+    // Atualizando o prestador se a validação passar
+    try {
+        const prestador = await prismaClient.prestadorServico.findUnique({
+            where: {
+                usuarioIdPrestador: usuario.id
+            }
+        });
+
+        if (prestador == null) {
+            return res.status(409).json({ error: "Ocorreu um erro ao carregar dados do perfil! :(" });
+        }
+
+        const prestadorCompleto = {
+            name: usuario.nome,
+            foto: usuario.foto,
+            email: usuario.email,
+            telefone: usuario.telefone,
+            cnpj: prestador.cnpj,
+            horarioDisponibilidade: prestador.horarioDisponibilidade,
+        }
+        return res.status(200).json(prestadorCompleto);
+    }
+    catch (error) {
+        return res.status(500).json({ error: "Erro ao listar dados de perfil do prestador" })
+    }
+};
+
+//Listar prestadores de uma determinada categoria
 export async function listarPrestadoresPorCategoria(req: Request, res: Response) {
     const { categoriaId } = req.body; // Pega o ID da categoria do corpo da solicitação
 
@@ -344,7 +379,7 @@ function gerarLinkWhatsApp(telefone: string): string {
     return `https://wa.me/${telefoneFormatado}`;
 };
 
-// Função para buscar o telefone do prestador e chmar a função que gera o link do WhatsApp
+// Função para buscar o telefone do prestador e chamar a função que gera o link do WhatsApp
 export async function gerarLinkWhatsAppDoPrestador(req: Request, res: Response) {
     const { id } = req.params; // Obtém o ID do usuário dos parâmetros da requisição
 

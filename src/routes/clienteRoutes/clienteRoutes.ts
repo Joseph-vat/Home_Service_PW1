@@ -1,5 +1,5 @@
 import express from 'express';
-import { atualizarFotoPerfilCliente, atulizarPerfilCliente, criarCliente, deletarCliente } from "../../controller/clienteController/clienteController";
+import { atualizarFotoPerfilCliente, listarPerfilCliente, atulizarPerfilCliente, criarCliente, deletarCliente } from "../../controller/clienteController/clienteController";
 import { upload } from "../../config/multerConfig";
 import { fazerLogin } from "../../controller/clienteController/clienteController";
 import { retornaClienteExistente } from '../../middlewares/verficaCliente';
@@ -20,6 +20,8 @@ clienteRoutes.put('/clienteFoto', retornaClienteExistente, autenticaTokenCliente
 // Atualizando perfil do cliente
 clienteRoutes.put('/cliente', retornaClienteExistente, autenticaTokenCliente, atulizarPerfilCliente)
 
+// Listar dados do perfil de um prestador
+clienteRoutes.get('/clientePerfil', retornaClienteExistente, autenticaTokenCliente, listarPerfilCliente)
 
 // Deletando cliente
 clienteRoutes.delete('/cliente', retornaClienteExistente, autenticaTokenCliente, deletarCliente)

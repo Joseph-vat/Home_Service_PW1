@@ -53,10 +53,8 @@ export function validaPrestadorAtualizacao(prestador: usuarioPrestadorAtualizaca
     cnpj: z.string({ required_error: 'CNPJ é obrigatório' }).trim()
       .refine((value) => validaCnpj(value), { message: 'CNPJ incorreto: digite no padrão XX.XXX.XXX/XXXX-XX.' }),
     horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' }),
-    latitude: z.string({ required_error: 'Latitude é obrigatório' }).trim()
-    .min(2, 'A latitude deve ter no mínimo 1 caractere'),
-    longitude: z.string({ required_error: 'Longitude é obrigatório' }).trim()
-    .min(2, 'A longitude deve ter no mínimo 1 caractere'),
+    latitude: z.number({ required_error: 'Latitude é obrigatório' }),
+    longitude: z.number({ required_error: 'Longitude é obrigatório' }),
     
   })
 
