@@ -21,7 +21,7 @@ export async function autenticaTokenCliente(req: Request, res: Response, next: N
         const { id } = verify(token, process.env.CHAVE_SECRETA as string) as payload;
 
         // Verifica se o ID do token corresponde ao ID do prestador
-        const idUsuarioCliente = req.userExpr?.id; // Garantir que req.userExpr existe e tem um ID
+        const idUsuarioCliente = req.userExprCliente.id // Garantir que req.userExpr existe e tem um ID
 
         if (id !== idUsuarioCliente) {
             return res.status(401).json({ error: 'Não autorizado: O token fornecido pertence a um usuário diferente.' });

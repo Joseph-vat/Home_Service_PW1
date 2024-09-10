@@ -152,7 +152,7 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
 
 // Listando cliente (Dados do perfil)
 export async function listarPerfilCliente(req: Request, res: Response) {
-    const usuario = req.userExpr;
+    const usuario = req.userExprCliente;
     console.log(usuario);
     
 
