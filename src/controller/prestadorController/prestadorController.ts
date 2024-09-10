@@ -59,7 +59,7 @@ export async function criarPrestador(req: Request, res: Response) {
             return res.status(409).json({ error: "Já existe prestador cadastrado para esse CNPJ" });
         }
         const senhaCriptografada = await hash(senha, 5)
-        const fotoPadrao = `${req.protocol}://${req.get('host')}/files/defaults/default.jpg`;
+        const fotoPadrao = `${req.protocol}://${req.get('host')}/files/defaults/default.png`;
 
         const novoUsuario = await prismaClient.usuario.create({
             data: {
@@ -141,6 +141,9 @@ export async function fazerLogin(req: Request, res: Response) {
 export async function atualizarFotoPerfilPrestador(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
+
+    console.log(nomeFoto);
+    
 
 
     if (!nomeFoto) {
