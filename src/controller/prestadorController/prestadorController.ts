@@ -332,36 +332,6 @@ export async function listarPrestadoresPorCategoria(req: Request, res: Response)
     }
 };
 
-// Função para gerar link do WhatsApp
-function gerarLinkWhatsApp(telefone: string): string {
-    const telefoneFormatado = telefone.replace(/\D/g, '');
-    return `https://wa.me/${telefoneFormatado}`;
-};
-
-// Função para buscar o telefone do prestador e chamar a função que gera o link do WhatsApp
-export async function gerarLinkWhatsAppDoPrestador(req: Request, res: Response) {
-    const { id } = req.params; // Obtém o ID do usuário dos parâmetros da requisição
-
-    try {
-        // Buscar o usuário pelo ID
-        const usuario = await prismaClient.usuario.findUnique({
-            where: { id },
-            select: { telefone: true } // Seleciona apenas o campo telefone
-        });
-
-        if (!usuario) {
-            return res.status(404).json({ error: 'Usuário não encontrado.' });
-        }
-
-        // Gerar o link do WhatsApp
-        const linkWhatsApp = gerarLinkWhatsApp(usuario.telefone);
-
-        return res.status(200).json({ link: linkWhatsApp });
-    } catch (error) {
-        return res.status(500).json({ error: 'Erro ao gerar link do WhatsApp' });
-    }
-};
-
 // Deletar prestador
 export async function deletarPrestador(req: Request, res: Response) {
     const id = req.autenticado; // id do usuario autenticado

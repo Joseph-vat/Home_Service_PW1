@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
+import { validaClienteAtualizacao, validaClienteCriacao } from '../../validacoes/validaCliente'
 import { prismaClient } from '../../database/prismaClient';
 import { log } from 'console';
 
@@ -42,7 +42,7 @@ export async function criarCliente(req: Request, res: Response) {
     try {
         const clienteCadastro = await prismaClient.cliente.findUnique({
             where: {
-                cpf:cpf
+                cpf: cpf
             }
         })
         if (clienteCadastro !== null) {
@@ -50,7 +50,7 @@ export async function criarCliente(req: Request, res: Response) {
         }
         const senhaCriptografada = await hash(senha, 5)
         const fotoPadrao = `${req.protocol}://${req.get('host')}/files/defaults/default.png`;
-       
+
         const novoUsuario = await prismaClient.usuario.create({
             data: {
                 nome,
@@ -88,7 +88,7 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
         return res.status(400).json({ error: "Nenhuma foto foi enviada" });
     }
 
-     // Constrói o caminho completo da URL para a foto
+    // Constrói o caminho completo da URL para a foto
     const caminhoFoto = `${req.protocol}://${req.get('host')}/files/cliente/${nomeFoto}`
 
 
@@ -111,7 +111,7 @@ export async function atualizarFotoPerfilCliente(req: Request, res: Response) {
 export async function listarPerfilCliente(req: Request, res: Response) {
     const usuario = req.userExprCliente;
     console.log(usuario);
-    
+
 
     // Atualizando o prestador se a validação passar
     try {
@@ -121,7 +121,7 @@ export async function listarPerfilCliente(req: Request, res: Response) {
             }
         });
         console.log(cliente);
-        
+
 
         if (cliente == null) {
             return res.status(409).json({ error: "Ocorreu um erro ao carregar dados do perfil! :(" });
@@ -136,15 +136,13 @@ export async function listarPerfilCliente(req: Request, res: Response) {
             endereco: cliente?.endereco,
         }
         console.log(clienteCompleto);
-        
+
         return res.status(200).json(clienteCompleto);
     }
     catch (error) {
         return res.status(500).json({ error: "Erro ao listar dados de perfil do cliente" })
     }
 };
-
-
 
 // Atualizando perfil do cliente
 export async function atulizarPerfilCliente(req: Request, res: Response) {
@@ -173,7 +171,7 @@ export async function atulizarPerfilCliente(req: Request, res: Response) {
             }
         })
         console.log(clienteCadastro?.cpf);
-        
+
         if (clienteCadastro?.usuarioIdCliente !== id && clienteCadastro?.cpf !== undefined) {
             return res.status(409).json({ error: "Já existe outro cliente cadastrado com esse CPF! Atualize o campo CPF com um CPF válido!" });
         }
