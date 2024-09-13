@@ -62,20 +62,3 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
     }
     return null; // Retorna null se a validação passar
 }
-
-////Validando dados do cliente no login
-export function validaClienteLogin(prestador: usuarioClienteAtualizacaoDadosSensiveis) {
-    const schema = z.object({
-      email: z.string({ required_error: 'Email é obrigatório' }).trim()
-        .email('E-mail inválido'),
-      senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
-    })
-  
-    const result = schema.safeParse(prestador);
-  
-    if (!result.success) {
-      const errors = result.error.errors.map((err: any) => err.message);
-      return errors;
-    }
-    return null; // Retorna null se a validação passar
-  }

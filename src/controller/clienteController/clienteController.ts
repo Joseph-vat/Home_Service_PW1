@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { compare, hash } from 'bcrypt';
 import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
-import { validaClienteAtualizacao, validaClienteCriacao, validaClienteLogin } from '../../validacoes/validaCliente'
+import { validaClienteAtualizacao, validaClienteCriacao} from '../../validacoes/validaCliente'
 import { prismaClient } from '../../database/prismaClient';
 import { log } from 'console';
 
@@ -57,7 +57,8 @@ export async function criarCliente(req: Request, res: Response) {
                 email,
                 senha: senhaCriptografada,
                 telefone,
-                foto: fotoPadrao
+                foto: fotoPadrao,
+                papel: 2
             }
         })
         const novoCliente = await prismaClient.cliente.create({
@@ -75,50 +76,6 @@ export async function criarCliente(req: Request, res: Response) {
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar cliente' });
     }
-};
-
-//Cria token para determinado usuario (Fazer login)
-export async function fazerLogin(req: Request, res: Response) {
-    const { email, senha } = req.body
-
-    // Validando os dados do prestador
-    const validacaoResult = await validaClienteLogin({
-        email,
-        senha
-    });
-
-    if (validacaoResult !== null) {
-        return res.status(400).json({ error: validacaoResult });
-    }
-
-    const retornaUsuarioCliente = await prismaClient.usuario.findUnique({
-        where: {
-            email: email
-        }
-    })
-    try {
-        if (retornaUsuarioCliente === null) {
-            return res.status(404).json({ error: "Cliente não existe." });
-        } else {
-            const compararSenhas = await compare(senha, retornaUsuarioCliente.senha)
-            if (!compararSenhas) {
-                return res.status(401).json({ error: "Senha ou Email incorreto!." });
-            }
-            const clienteId = retornaUsuarioCliente.id
-
-            const token = jwt.sign(
-                { id: clienteId },
-                process.env.CHAVE_SECRETA as string,
-                { expiresIn: '1d', subject: clienteId }
-            );
-
-            return res.status(200).json(token)
-        }
-    } catch (error) {
-        return res.status(400).json({ error: "Erro ao fazer login do usuário" })
-
-    }
-
 };
 
 //criar foto do perfil 

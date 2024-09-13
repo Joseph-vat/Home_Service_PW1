@@ -1,8 +1,9 @@
 import express from 'express';
-import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorCategoria, listarPerfilPrestador, gerarLinkWhatsAppDoPrestador, atualizarPerfilPrestador, deletarPrestador, atualizarFotoPerfilPrestador  } from "../../controller/prestadorController/prestadorController";
+import { criarPrestador, listarTodosPrestadores, listarPrestadoresPorCategoria, listarPerfilPrestador, gerarLinkWhatsAppDoPrestador, atualizarPerfilPrestador, deletarPrestador, atualizarFotoPerfilPrestador  } from "../../controller/prestadorController/prestadorController";
 import { upload } from "../../config/multerConfig";
 import { retornaPrestadorExistente } from '../../middlewares/verificaPrestador';
 import { autenticaTokenPrestador } from '../../middlewares/autenticaTokenPrestador';
+import { fazerLogin } from '../../controller/usuarioController/usuarioController';
 
 const prestadorRoutes = express();
 prestadorRoutes.use(express.json())

@@ -17,6 +17,7 @@ model Usuario {
   senha     String
   telefone  String
   foto      String? //saber depois como usar e qual o tipo será
+  papel    Int
   prestador PrestadorServico?
   cliente   Cliente?
 }

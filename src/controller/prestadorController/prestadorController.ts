@@ -67,7 +67,8 @@ export async function criarPrestador(req: Request, res: Response) {
                 email,
                 senha: senhaCriptografada,
                 telefone,
-                foto: fotoPadrao
+                foto: fotoPadrao,
+                papel: 1
             }
         })
         const novoPrestador = await prismaClient.prestadorServico.create({
@@ -90,51 +91,6 @@ export async function criarPrestador(req: Request, res: Response) {
     } catch (error) {
         res.status(500).json({ error: 'Erro ao criar prestador de serviço' });
     }
-};
-
-//Cria token para determinado usuario (Fazer login)
-export async function fazerLogin(req: Request, res: Response) {
-    const { email, senha } = req.body
-
-    // Validando os dados do prestador
-    const validacaoResult = await validaPrestadorLogin({
-        email,
-        senha
-    });
-
-    if (validacaoResult !== null) {
-        return res.status(400).json({ error: validacaoResult });
-    }
-
-    const retornaUsuarioPrestador = await prismaClient.usuario.findUnique({
-        where: {
-            email: email
-        },
-    })
-    try {
-        if (retornaUsuarioPrestador === null) {
-            return res.status(404).json({ error: "Prestador não existe." });
-        } else {
-            const compararSenhas = await compare(senha, retornaUsuarioPrestador.senha)
-            if (!compararSenhas) {
-                return res.status(401).json({ error: "Senha ou Email incorreto!." });
-
-            }
-
-            const prestadorId = retornaUsuarioPrestador.id
-
-            const token = jwt.sign(
-                { id: prestadorId },
-                process.env.CHAVE_SECRETA as string,
-                { expiresIn: '1d', subject: prestadorId }
-            );
-
-            return res.status(200).json(token)
-        }
-    } catch (error) {
-        return res.status(500).json({ error: "Erro ao fazer login do prestador" })
-    }
-
 };
 
 //criar foto do perfil 
