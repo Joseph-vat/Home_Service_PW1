@@ -5,6 +5,8 @@ import { sign } from "crypto";
 import jwt from 'jsonwebtoken';
 import { validaPrestadorAtualizacao, validaPrestadorCriacao, validaPrestadorLogin } from "../../validacoes/validaPrestador";
 import { log } from "console";
+import { resolve } from 'node:path';
+import fs from 'fs';
 
 
 
@@ -93,20 +95,24 @@ export async function criarPrestador(req: Request, res: Response) {
     }
 };
 
-//criar foto do perfil 
+//Atualiza a foto do perfil do prestador
 export async function atualizarFotoPerfilPrestador(req: Request, res: Response) {
     const idUsuario = req.autenticado
     const nomeFoto = req.file?.filename as string
 
-    console.log(nomeFoto);
+    console.log("aqui: ");
     
-
+    console.log(nomeFoto);
 
     if (!nomeFoto) {
         return res.status(400).json({ error: "Nenhuma foto foi enviada" });
     }
 
     const caminhoFoto = `${req.protocol}://${req.get('host')}/files/prestador/${nomeFoto}`;
+    console.log("caminho: ");
+    
+    console.log(caminhoFoto);
+    
 
     try {
         const atualizaUsuario = await prismaClient.usuario.update({
@@ -122,6 +128,7 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
         return res.status(400).json({ error: "Erro a atualizar foto do prestador" })
     }
 };
+
 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {

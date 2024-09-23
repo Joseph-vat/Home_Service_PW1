@@ -5,6 +5,7 @@ import { retornaPrestadorExistente } from '../../middlewares/verificaPrestador';
 import { autenticaTokenPrestador } from '../../middlewares/autenticaTokenPrestador';
 import { fazerLogin } from '../../controller/usuarioController/usuarioController';
 
+
 const prestadorRoutes = express();
 prestadorRoutes.use(express.json())
 
@@ -17,6 +18,7 @@ prestadorRoutes.post('/login', fazerLogin)
 
 //Criar foto para perfil do prestador
 prestadorRoutes.put('/prestadorFoto', retornaPrestadorExistente, autenticaTokenPrestador, upload('uploads/prestador'), atualizarFotoPerfilPrestador)
+
 
 // Atualizando perfil do prestador
 prestadorRoutes.put('/prestador', retornaPrestadorExistente, autenticaTokenPrestador, atualizarPerfilPrestador)
