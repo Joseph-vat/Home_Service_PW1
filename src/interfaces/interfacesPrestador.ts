@@ -17,7 +17,6 @@ export interface usuarioPrestador {
 export interface usuarioPrestadorAtualizacao {
     nome: string;
     telefone: string;
-    cnpj: string;
     horarioDisponibilidade: string;
     latitude: number;
     longitude: number;

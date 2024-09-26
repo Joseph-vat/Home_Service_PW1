@@ -10,7 +10,6 @@ export interface usuarioCliente {
 export interface usuarioClienteAtualizacao {
     nome: string;
     telefone: string;
-    cpf: string;
     endereco: string;
 }
 

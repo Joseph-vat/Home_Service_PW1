@@ -48,8 +48,6 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
         telefone: z.string({ required_error: 'Telefone é obrigatório' }).refine((value) => validaTelefone(value), {
             message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
         }),
-        cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
-            .refine((value) => validaCpf(value), { message: 'CPF incorreto: digite no padrão XXX.XXX.XXX-XX.' }),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })

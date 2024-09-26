@@ -50,8 +50,6 @@ export function validaPrestadorAtualizacao(prestador: usuarioPrestadorAtualizaca
     telefone: z.string({ required_error: 'Telefone é obrigatório' }).refine((value) => validaTelefone(value), {
       message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
     }),
-    cnpj: z.string({ required_error: 'CNPJ é obrigatório' }).trim()
-      .refine((value) => validaCnpj(value), { message: 'CNPJ incorreto: digite no padrão XX.XXX.XXX/XXXX-XX.' }),
     horarioDisponibilidade: z.string({ required_error: 'Horário de disponibilidade é obrigatório' }),
     latitude: z.number({ required_error: 'Latitude é obrigatório' }),
     longitude: z.number({ required_error: 'Longitude é obrigatório' }),

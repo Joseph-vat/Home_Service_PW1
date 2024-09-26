@@ -133,13 +133,12 @@ export async function atualizarFotoPerfilPrestador(req: Request, res: Response) 
 // Atualizando perfil do prestador
 export async function atualizarPerfilPrestador(req: Request, res: Response) {
     const id = req.autenticado
-    const { nome, telefone, cnpj, horarioDisponibilidade, latitude, longitude } = req.body
+    const { nome, telefone, horarioDisponibilidade, latitude, longitude } = req.body
 
     // Validando os dados do prestador
     const validacaoResult = await validaPrestadorAtualizacao({
         nome,
         telefone,
-        cnpj,
         horarioDisponibilidade,
         latitude,
         longitude
@@ -154,15 +153,6 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
 
     // Atualizando o prestador se a validação passar
     try {
-        //Não permite que o novo CNPJ que esta sendo atualizado,seja alterado para o mesmo CNPJ de outro prestador já existente na plataforma
-        const prestadorCadastro = await prismaClient.prestadorServico.findUnique({
-            where: {
-                cnpj: cnpj
-            }
-        })
-        if (prestadorCadastro?.usuarioIdPrestador !== id && prestadorCadastro?.cnpj !== undefined) {
-            return res.status(409).json({ error: "Já existe outro prestador cadastrado com esse CNPJ! Atualize o campo CNPJ com um CNPJ válido!" });
-        }
         const atualizaUsuario = await prismaClient.usuario.update({
             where: {
                 id: id
@@ -177,7 +167,6 @@ export async function atualizarPerfilPrestador(req: Request, res: Response) {
                 usuarioIdPrestador: id
             },
             data: {
-                cnpj,
                 horarioDisponibilidade,
                 latitude: parseFloat(latitude),
                 longitude: parseFloat(longitude)
