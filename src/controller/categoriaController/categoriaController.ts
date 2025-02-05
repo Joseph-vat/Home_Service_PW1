@@ -45,7 +45,11 @@ export async function criarCategoria(req: Request, res: Response) {
 export async function listarCategorias(req: Request, res: Response) {
     try {
         // Consulta todas as categorias no banco de dados
-        const categorias = await prismaClient.categoria.findMany();
+        const categorias = await prismaClient.categoria.findMany({
+            orderBy: {
+                servico: 'asc',
+            },
+          });
 
         // Retorna as categorias como resposta
         return res.status(200).json(categorias);
