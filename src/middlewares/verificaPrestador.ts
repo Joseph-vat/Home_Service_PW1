@@ -10,6 +10,8 @@ export async function retornaPrestadorExistente(req: Request, res: Response, nex
             email: email
         }
     })
+    console.log(prestadorEncontrado);
+    
     if (prestadorEncontrado !== null) {
         req.userExpr = prestadorEncontrado
         next();

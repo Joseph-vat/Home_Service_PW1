@@ -30,7 +30,7 @@ export const validaClienteCriacao = (cliente: usuarioCliente) => {
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })
-
+    
     const result = schema.safeParse(cliente);
 
     if (!result.success) {
@@ -48,8 +48,6 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
         telefone: z.string({ required_error: 'Telefone é obrigatório' }).refine((value) => validaTelefone(value), {
             message: 'Telefone incorreto: digite no padrão (XX) XXXX-XXXX.',
         }),
-        cpf: z.string({ required_error: 'CPF é obrigatório' }).trim()
-            .refine((value) => validaCpf(value), { message: 'CPF incorreto: digite no padrão XXX.XXX.XXX-XX.' }),
         endereco: z.string({ required_error: 'Endereço é obrigatório' }).trim()
             .min(3, 'O endereço deve ter no mínimo 3 caracteres'),
     })
@@ -62,39 +60,3 @@ export function validaClienteAtualizacao(cliente: usuarioClienteAtualizacao) {
     }
     return null; // Retorna null se a validação passar
 }
-
-//Validando dados do cliente na atualização de dados sensivéis (email e senha)
-export function validaClienteSeguranca(cliente: usuarioClienteAtualizacaoDadosSensiveis) {
-    const schema = z.object({
-        email: z.string({ required_error: 'Email é obrigatório' }).trim()
-            .email('E-mail inválido'),
-        senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
-            .min(6, 'A senha deve ter pelo menos 6 caracteres'),
-    })
-
-    const result = schema.safeParse(cliente);
-
-    if (!result.success) {
-        const errors = result.error.errors.map((err: any) => err.message);
-        return errors;
-    }
-    return null; // Retorna null se a validação passar
-}
-
-
-////Validando dados do cliente no login
-export function validaClienteLogin(prestador: usuarioClienteAtualizacaoDadosSensiveis) {
-    const schema = z.object({
-      email: z.string({ required_error: 'Email é obrigatório' }).trim()
-        .email('E-mail inválido'),
-      senha: z.string({ required_error: 'Senha é obrigatória' }).trim()
-    })
-  
-    const result = schema.safeParse(prestador);
-  
-    if (!result.success) {
-      const errors = result.error.errors.map((err: any) => err.message);
-      return errors;
-    }
-    return null; // Retorna null se a validação passar
-  }

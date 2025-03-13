@@ -1,8 +1,10 @@
 import express from 'express';
-import { criarPrestador, fazerLogin, listarTodosPrestadores, listarPrestadoresPorServico, atualizarPerfilPrestador, atualizarSegurancaPrestador, deletarPrestador, atualizarFotoPerfilPrestador,  } from "../../controller/prestadorController/prestadorController";
+import { criarPrestador, listarTodosPrestadores, listarPrestadoresPorCategoria, listarPerfilPrestador, atualizarPerfilPrestador, deletarPrestador, atualizarFotoPerfilPrestador  } from "../../controller/prestadorController/prestadorController";
 import { upload } from "../../config/multerConfig";
 import { retornaPrestadorExistente } from '../../middlewares/verificaPrestador';
 import { autenticaTokenPrestador } from '../../middlewares/autenticaTokenPrestador';
+import { fazerLogin } from '../../controller/usuarioController/usuarioController';
+
 
 const prestadorRoutes = express();
 prestadorRoutes.use(express.json())
@@ -17,17 +19,19 @@ prestadorRoutes.post('/login', fazerLogin)
 //Criar foto para perfil do prestador
 prestadorRoutes.put('/prestadorFoto', retornaPrestadorExistente, autenticaTokenPrestador, upload('uploads/prestador'), atualizarFotoPerfilPrestador)
 
+
 // Atualizando perfil do prestador
 prestadorRoutes.put('/prestador', retornaPrestadorExistente, autenticaTokenPrestador, atualizarPerfilPrestador)
 
-// Atualizando dados de segurança do prestador (email e senha)
-prestadorRoutes.put('/prestador/dadosSeguranca', retornaPrestadorExistente, autenticaTokenPrestador, atualizarSegurancaPrestador)
-
-// Listando todos os usuários com detalhes de um determinado prestador (se existirem)
+// Listando todos os prestadores
 prestadorRoutes.get('/prestador', listarTodosPrestadores)
 
-// Listando os prestadores por tipo de serviço
-prestadorRoutes.get('/prestadorservico', listarPrestadoresPorServico)
+// Listar dados do perfil de um prestador
+prestadorRoutes.get('/prestadorPerfil', retornaPrestadorExistente, autenticaTokenPrestador, listarPerfilPrestador)
+
+// Listando os prestadores por tipo de serviço (Categoria)
+prestadorRoutes.get('/prestadores/categoria', listarPrestadoresPorCategoria);
+
 
 //Deletar um prestador e todos seus relacionamentos com usuario e anuncios
 prestadorRoutes.delete('/prestador', retornaPrestadorExistente, autenticaTokenPrestador, deletarPrestador)

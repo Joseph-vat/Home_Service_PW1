@@ -17,6 +17,7 @@ model Usuario {
   senha     String
   telefone  String
   foto      String? //saber depois como usar e qual o tipo será
+  papel    Int
   prestador PrestadorServico?
   cliente   Cliente?
 }
@@ -26,6 +27,8 @@ model PrestadorServico {
   horarioDisponibilidade String
   usuarioIdPrestador     String    @unique
   usuario                Usuario   @relation(fields: [usuarioIdPrestador], references: [id])
+  latitude      Float
+  longitude     Float
   anuncios               Anuncio[]
 }
 
@@ -41,11 +44,17 @@ model Anuncio {
   titulo        String
   descricao     String
   preco         String
-  servico       String
-  latitude      Float
-  longitude     Float
   dtCriacao     DateTime         @default(now())
   dtAtualizacao DateTime         @updatedAt
   prestadorId   String
   prestador     PrestadorServico @relation(fields: [prestadorId], references: [usuarioIdPrestador])
+  categoriaId   String
+  categoria     Categoria        @relation(fields: [categoriaId], references: [id])
+}
+
+model Categoria {
+  id        String   @id @default(uuid())
+  servico   String
+  icone     String
+  anuncios  Anuncio[]
 }
